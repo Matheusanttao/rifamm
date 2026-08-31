@@ -21,7 +21,7 @@ const statusCopy: Record<Order['status_pagamento'], { title: string; text: strin
   },
   aprovado: {
     title: 'Pagamento aprovado',
-    text: 'Sua participação foi confirmada! Guarde o identificador do pedido para acompanhar o sorteio.',
+    text: 'Sua participação foi confirmada! Enviamos um e-mail de agradecimento com os seus números. Que Deus abençoe muito você!',
     icon: CheckCircle2,
   },
   recusado: {

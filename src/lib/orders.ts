@@ -59,6 +59,7 @@ export async function createOrder(
       ...emptyPaymentFields(),
       reservado_ate: null,
       pago_em: null,
+      email_enviado: false,
       created_at: now,
       updated_at: now,
     }

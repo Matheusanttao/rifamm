@@ -32,6 +32,7 @@ export type Order = {
   provider_payment_id: string | null
   reservado_ate: string | null
   pago_em: string | null
+  email_enviado?: boolean
   created_at: string
   updated_at: string
 }

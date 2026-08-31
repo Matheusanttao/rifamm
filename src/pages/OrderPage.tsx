@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react'
-import { ArrowLeft, FileDown } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import { PaymentCard } from '../components/PaymentCard'
 import { PaymentPix } from '../components/PaymentPix'
 import { PaymentStatusPanel } from '../components/PaymentStatusPanel'
 import { initMercadoPagoPayment, syncMercadoPagoPayment } from '../lib/mercadopago'
-import { downloadOrderPdf } from '../lib/orderPdf'
 import { applyPaymentDataToOrder, fetchOrder } from '../lib/orders'
 import { useSite } from '../lib/site-context'
 import { isSupabaseConfigured } from '../lib/supabase'
@@ -108,13 +107,6 @@ export function OrderPage() {
           <Link className="back-link" to="/participar">
             <ArrowLeft size={16} /> Fazer novo pedido
           </Link>
-          <button
-            type="button"
-            className="button ghost"
-            onClick={() => downloadOrderPdf(order, settings)}
-          >
-            <FileDown size={16} /> Baixar PDF
-          </button>
         </div>
 
         <PaymentStatusPanel order={order} />

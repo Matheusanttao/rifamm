@@ -80,6 +80,7 @@ create table if not exists public.pedidos (
   provider_payment_id text,
   reservado_ate timestamptz,
   pago_em timestamptz,
+  email_enviado boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

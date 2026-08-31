@@ -1,15 +1,12 @@
 import { useState, type CSSProperties, type FormEvent } from 'react'
-import { ArrowRight, FileDown, Search } from 'lucide-react'
+import { ArrowRight, Search } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { StatusBadge } from '../components/StatusBadge'
 import { formatCurrency, formatDateTime, formatNumbersList } from '../lib/format'
-import { downloadOrderPdf } from '../lib/orderPdf'
 import { paymentMethodLabel, searchOrders } from '../lib/orders'
-import { useSite } from '../lib/site-context'
 import type { Order } from '../types/raffle'
 
 export function BuscarPedidoPage() {
-  const { settings } = useSite()
   const [codigo, setCodigo] = useState('')
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
@@ -44,8 +41,7 @@ export function BuscarPedidoPage() {
           <p className="home-section-id">Consulta</p>
           <h1>Buscar pedido</h1>
           <p className="muted">
-            Informe o código do pedido e o e-mail usados na compra para ver o status e baixar o
-            comprovante em PDF.
+            Informe o código do pedido e o e-mail usados na compra para ver o status da participação.
           </p>
 
           <form className="stacked-form buscar-form" onSubmit={handleSubmit}>
@@ -109,16 +105,9 @@ export function BuscarPedidoPage() {
                 </div>
 
                 <div className="buscar-result-actions">
-                  <Link className="button ghost" to={`/pedido/${order.id}`}>
+                  <Link className="button primary" to={`/pedido/${order.id}`}>
                     Ver pedido <ArrowRight size={16} />
                   </Link>
-                  <button
-                    type="button"
-                    className="button primary"
-                    onClick={() => downloadOrderPdf(order, settings)}
-                  >
-                    <FileDown size={16} /> Baixar PDF
-                  </button>
                 </div>
               </article>
             ))}
