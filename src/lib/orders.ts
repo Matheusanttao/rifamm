@@ -1,0 +1,189 @@
+import type { CreateOrderInput, Order, PaymentMethod } from '../types/raffle'
+import type { SiteSettings } from '../types/settings'
+import { generateOrderCode } from './format'
+import { releaseNumbersLocally, reserveNumbersLocally } from './numbers'
+import { isSupabaseConfigured, supabase } from './supabase'
+
+const ORDERS_KEY = 'rifa_pedidos_demo'
+
+function emptyPaymentFields() {
+  return {
+    pix_copia_cola: null as string | null,
+    pix_qr_base64: null as string | null,
+    checkout_url: null as string | null,
+    provider_payment_id: null as string | null,
+  }
+}
+
+function readLocalOrders(): Order[] {
+  try {
+    const raw = localStorage.getItem(ORDERS_KEY)
+    return raw ? (JSON.parse(raw) as Order[]) : []
+  } catch {
+    return []
+  }
+}
+
+function writeLocalOrders(orders: Order[]) {
+  localStorage.setItem(ORDERS_KEY, JSON.stringify(orders))
+}
+
+function buildDemoPixCode(order: Order) {
+  return `DEMO-PIX-${order.codigo}-VALOR-${order.valor_total.toFixed(2)}-RIFA-MATHEUS-MELISSA`
+}
+
+export async function createOrder(
+  input: CreateOrderInput,
+  settings: SiteSettings,
+): Promise<Order> {
+  const valorTotal = input.numeros.length * settings.valor_numero
+  const now = new Date().toISOString()
+  const reservadoAte = new Date(Date.now() + settings.reserva_minutos * 60_000).toISOString()
+
+  if (!isSupabaseConfigured) {
+    const id = crypto.randomUUID()
+    const order: Order = {
+      id,
+      codigo: generateOrderCode(),
+      participante_nome: input.participante_nome.trim(),
+      participante_email: input.participante_email.trim(),
+      participante_telefone: input.participante_telefone?.trim() || null,
+      numeros: [...input.numeros].sort((a, b) => a - b),
+      valor_total: valorTotal,
+      status_pagamento: 'aguardando',
+      metodo_pagamento: input.metodo_pagamento,
+      ...emptyPaymentFields(),
+      reservado_ate: reservadoAte,
+      pago_em: null,
+      created_at: now,
+      updated_at: now,
+    }
+
+    order.pix_copia_cola = buildDemoPixCode(order)
+    order.pix_qr_base64 = null
+    order.checkout_url = null
+    order.provider_payment_id = null
+    await reserveNumbersLocally(order.numeros, order.id, settings.reserva_minutos, settings)
+
+    const orders = readLocalOrders()
+    orders.unshift(order)
+    writeLocalOrders(orders)
+    return order
+  }
+
+  const { data: inserted, error: insertError } = await supabase
+    .from('pedidos')
+    .insert({
+      codigo: generateOrderCode(),
+      participante_nome: input.participante_nome.trim(),
+      participante_email: input.participante_email.trim(),
+      participante_telefone: input.participante_telefone?.trim() || null,
+      numeros: input.numeros,
+      valor_total: valorTotal,
+      status_pagamento: 'aguardando',
+      metodo_pagamento: input.metodo_pagamento,
+      reservado_ate: reservadoAte,
+    })
+    .select('*')
+    .single()
+
+  if (insertError || !inserted) throw new Error(insertError?.message || 'Erro ao criar pedido.')
+
+  const { data: reserveResult, error: reserveError } = await supabase.rpc('reservar_numeros', {
+    p_pedido_id: inserted.id,
+    p_numeros: input.numeros,
+    p_reserva_minutos: settings.reserva_minutos,
+  })
+
+  if (reserveError) throw new Error(reserveError.message)
+  if (!reserveResult?.sucesso) throw new Error(reserveResult?.mensagem || 'Números indisponíveis.')
+
+  return inserted
+}
+
+export async function fetchOrder(id: string): Promise<Order | null> {
+  if (!isSupabaseConfigured) {
+    const order = readLocalOrders().find((item) => item.id === id) || null
+    if (!order) return null
+    return refreshLocalOrderStatus(order)
+  }
+
+  const { data, error } = await supabase.from('pedidos').select('*').eq('id', id).maybeSingle()
+  if (error) throw new Error(error.message)
+  return data
+}
+
+export async function fetchOrders(): Promise<Order[]> {
+  if (!isSupabaseConfigured) {
+    const orders = readLocalOrders()
+    return Promise.all(orders.map((order) => refreshLocalOrderStatus(order)))
+  }
+
+  const { data, error } = await supabase.from('pedidos').select('*').order('created_at', { ascending: false })
+  if (error) throw new Error(error.message)
+  return data || []
+}
+
+async function refreshLocalOrderStatus(order: Order): Promise<Order> {
+  if (order.status_pagamento !== 'aguardando' || !order.reservado_ate) return order
+
+  if (new Date(order.reservado_ate).getTime() > Date.now()) return order
+
+  const expired: Order = { ...order, status_pagamento: 'expirado', updated_at: new Date().toISOString() }
+  const orders = readLocalOrders().map((item) => (item.id === order.id ? expired : item))
+  writeLocalOrders(orders)
+
+  const settings = JSON.parse(localStorage.getItem('rifa_site_settings') || '{}')
+  await releaseNumbersLocally(order.numeros, {
+    total_numeros: settings.total_numeros || 200,
+  } as SiteSettings)
+
+  return expired
+}
+
+export function getPixQrUrl(copiaCola: string, base64?: string | null) {
+  if (base64) return `data:image/png;base64,${base64}`
+  const encoded = encodeURIComponent(copiaCola)
+  return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encoded}`
+}
+
+export async function applyPaymentDataToOrder(
+  orderId: string,
+  payment: {
+    pix_copia_cola?: string | null
+    pix_qr_base64?: string | null
+    checkout_url?: string | null
+    provider_payment_id?: string | null
+  },
+): Promise<Order | null> {
+  if (!isSupabaseConfigured) {
+    const orders = readLocalOrders()
+    const index = orders.findIndex((item) => item.id === orderId)
+    if (index === -1) return null
+    orders[index] = { ...orders[index], ...payment, updated_at: new Date().toISOString() }
+    writeLocalOrders(orders)
+    return orders[index]
+  }
+
+  const { data, error } = await supabase
+    .from('pedidos')
+    .update({
+      pix_copia_cola: payment.pix_copia_cola,
+      pix_qr_base64: payment.pix_qr_base64,
+      checkout_url: payment.checkout_url,
+      provider_payment_id: payment.provider_payment_id,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', orderId)
+    .select('*')
+    .single()
+
+  if (error) throw new Error(error.message)
+  return data
+}
+
+export function paymentMethodLabel(method: PaymentMethod | null) {
+  if (method === 'pix') return 'PIX'
+  if (method === 'cartao') return 'Cartão de crédito'
+  return '—'
+}
