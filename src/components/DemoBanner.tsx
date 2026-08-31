@@ -1,4 +1,4 @@
-import { AlertTriangle } from 'lucide-react'
+import { Shield } from 'lucide-react'
 
 type DemoBannerProps = {
   pagamentoHabilitado: boolean
@@ -9,7 +9,7 @@ export function DemoBanner({ pagamentoHabilitado }: DemoBannerProps) {
 
   return (
     <div className="demo-banner" role="status">
-      <AlertTriangle size={18} />
+      <Shield size={18} />
       <div>
         <strong>Modo demonstrativo</strong>
         <p>
