@@ -189,11 +189,11 @@ export function Home() {
           <div>
             <p className="home-section-id">04 / consulta</p>
             <h2>Já participou?</h2>
-            <p>Busque seu pedido pelo código e e-mail e baixe o comprovante em PDF.</p>
+            <p>Digite seu CPF para ver os números que você comprou e acessar o comprovante do pedido.</p>
           </div>
-          <Link className="button primary" to="/buscar">
+          <Link className="button primary" to="/meus-numeros">
             <Search size={16} aria-hidden="true" />
-            Buscar pedido
+            Consultar por CPF
           </Link>
         </div>
       </section>

@@ -62,6 +62,22 @@ export function mapPaymentStatus(mpStatus) {
   }
 }
 
+export function resolveMercadoPagoStatus(payment) {
+  const mapped = mapPaymentStatus(payment?.status)
+  if (mapped !== 'aguardando') return mapped
+
+  const expiration = payment?.date_of_expiration
+  if (expiration && new Date(expiration).getTime() <= Date.now()) {
+    return 'expirado'
+  }
+
+  return 'aguardando'
+}
+
+function pixExpirationDate(minutes = 30) {
+  return new Date(Date.now() + minutes * 60 * 1000).toISOString()
+}
+
 export async function createPixPayment({ order, baseUrl, idempotencyKey }) {
   const payer = splitName(order.participante_nome)
   const identification = payerIdentification(order)
@@ -76,6 +92,7 @@ export async function createPixPayment({ order, baseUrl, idempotencyKey }) {
       description: `Rifa ${order.codigo} — ${order.numeros.length} número(s)`,
       payment_method_id: 'pix',
       external_reference: order.id,
+      date_of_expiration: pixExpirationDate(30),
       payer: {
         email: order.participante_email,
         first_name: payer.first_name,

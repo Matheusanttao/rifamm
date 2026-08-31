@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { ArrowLeft, ArrowRight, CreditCard, QrCode } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
@@ -40,6 +40,14 @@ export function ParticiparPage() {
   const emailValido = isValidEmail(email)
   const telefoneValido = isValidPhone(telefone)
   const nomeValido = nome.trim().length >= 3
+
+  useEffect(() => {
+    if (!isSupabaseConfigured || !settings.pagamento_habilitado) return
+
+    void fetch('/api/orders/release-expired')
+      .then(() => refreshNumbers())
+      .catch(() => undefined)
+  }, [refreshNumbers, settings.pagamento_habilitado])
 
   function handleContinueToPayment() {
     if (!nomeValido) {

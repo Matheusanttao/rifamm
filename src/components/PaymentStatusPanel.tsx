@@ -16,7 +16,7 @@ type PaymentStatusPanelProps = {
 const statusCopy: Record<Order['status_pagamento'], { title: string; text: string; icon: typeof Clock3 }> = {
   aguardando: {
     title: 'Aguardando pagamento',
-    text: 'Seus números estão reservados para este pedido. Conclua o pagamento para confirmar a participação.',
+    text: 'Seus números estão reservados (não vendidos). Conclua o PIX em até 30 minutos ou eles voltam a ficar disponíveis.',
     icon: Clock3,
   },
   aprovado: {

@@ -11,10 +11,16 @@ type NumberGridProps = {
   disabled?: boolean
 }
 
-type Filter = 'todos' | 'disponivel' | 'vendido'
+type Filter = 'todos' | 'disponivel' | 'reservado' | 'vendido'
 
 function isUnavailable(status: RaffleNumber['status']) {
   return status === 'vendido' || status === 'reservado'
+}
+
+function statusLabel(status: RaffleNumber['status']) {
+  if (status === 'reservado') return 'reservado — aguardando pagamento'
+  if (status === 'vendido') return 'vendido'
+  return 'disponível'
 }
 
 export function NumberGrid({ numbers, selected, onChange, valorNumero, disabled }: NumberGridProps) {
@@ -27,7 +33,8 @@ export function NumberGrid({ numbers, selected, onChange, valorNumero, disabled 
     return numbers
       .filter((item) => {
         if (filter === 'disponivel') return item.status === 'disponivel'
-        if (filter === 'vendido') return isUnavailable(item.status)
+        if (filter === 'reservado') return item.status === 'reservado'
+        if (filter === 'vendido') return item.status === 'vendido'
         return true
       })
       .filter((item) => (query ? String(item.numero).includes(query) : true))
@@ -71,6 +78,7 @@ export function NumberGrid({ numbers, selected, onChange, valorNumero, disabled 
             [
               ['todos', 'Todos'],
               ['disponivel', 'Disponível'],
+              ['reservado', 'Reservado'],
               ['vendido', 'Vendido'],
             ] as const
           ).map(([value, label]) => (
@@ -119,14 +127,10 @@ export function NumberGrid({ numbers, selected, onChange, valorNumero, disabled 
             <button
               key={item.numero}
               type="button"
-              className={`number-cell status-${unavailable ? 'vendido' : item.status} ${isSelected ? 'is-selected' : ''}`}
+              className={`number-cell status-${item.status} ${isSelected ? 'is-selected' : ''}`}
               onClick={() => toggleNumber(item.numero)}
               disabled={disabled || unavailable}
-              title={
-                unavailable
-                  ? `Número ${String(item.numero).padStart(3, '0')} — indisponível`
-                  : `Número ${String(item.numero).padStart(3, '0')}`
-              }
+              title={`Número ${String(item.numero).padStart(3, '0')} — ${statusLabel(item.status)}`}
             >
               {String(item.numero).padStart(3, '0')}
             </button>

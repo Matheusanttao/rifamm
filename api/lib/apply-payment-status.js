@@ -3,11 +3,11 @@ import {
   releaseExpiredOrder,
   updateOrder,
 } from './supabase-admin.js'
-import { mapPaymentStatus } from './mercadopago.js'
+import { resolveMercadoPagoStatus } from './mercadopago.js'
 import { sendOrderThankYouEmail } from './send-order-email.js'
 
 export async function applyMercadoPagoStatus(order, payment) {
-  const status = mapPaymentStatus(payment.status)
+  const status = resolveMercadoPagoStatus(payment)
   const orderId = order.id
 
   if (status === 'aprovado') {

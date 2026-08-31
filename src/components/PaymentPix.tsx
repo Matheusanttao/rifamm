@@ -96,8 +96,8 @@ export function PaymentPix({ order, settings, loading }: PaymentPixProps) {
 
       <p className="payment-note">
         <CreditCard size={14} />
-        O pagamento só será confirmado após validação no Mercado Pago. Enviar comprovante ou
-        retornar desta página não confirma automaticamente a compra.
+        O pagamento só será confirmado após validação no Mercado Pago. Se você não pagar em até 30
+        minutos, os números voltam a ficar disponíveis para outras pessoas.
       </p>
     </div>
   )
