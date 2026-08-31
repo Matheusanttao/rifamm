@@ -84,8 +84,7 @@ export const defaultSiteSettings: SiteSettings = {
   total_numeros: 200,
   valor_numero: 15,
   reserva_minutos: 15,
-  hero_imagem_url:
-    'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=900&q=80',
+  hero_imagem_url: '/matheus-melissa.png',
   pagamento_habilitado: false,
   pix_chave: null,
   pix_titular: null,
