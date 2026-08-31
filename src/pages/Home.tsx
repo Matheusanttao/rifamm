@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowRight, CalendarHeart, Hash, Ticket } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { DemoBanner } from '../components/DemoBanner'
 import { PrizeShowcase } from '../components/PrizeShowcase'
@@ -42,16 +42,23 @@ export function Home() {
       <section className="home-hero">
         <div className="container home-hero-grid">
           <div className="home-hero-copy">
-            <p className="home-brand">{settings.subtitulo_site}</p>
+            <p className="home-kicker">
+              <span className="home-kicker-dot" aria-hidden="true" />
+              sistema online · {settings.subtitulo_site}
+            </p>
             <h1>{settings.titulo_site}</h1>
             <p className="home-lead">{settings.texto_hero}</p>
-            <Link className="button primary large home-cta" to="/participar">
-              Participar da rifa
+            <Link className="home-cta" to="/participar">
+              Entrar na rifa
               <ArrowRight size={18} aria-hidden="true" />
             </Link>
           </div>
 
           <figure className="home-hero-photo">
+            <div className="home-hero-photo-meta" aria-hidden="true">
+              <span>IMG_01</span>
+              <span>LIVE</span>
+            </div>
             <img
               src={COUPLE_IMAGE}
               alt={`${settings.subtitulo_site} — foto do casal`}
@@ -60,55 +67,57 @@ export function Home() {
         </div>
       </section>
 
-      <section className="home-facts-bar" aria-label="Informações da rifa">
+      <section className="home-facts-bar" aria-label="Dados da rifa">
         <div className="container home-facts">
-          <p>
-            <CalendarHeart size={16} aria-hidden="true" />
-            Sorteio <strong>{formatDate(settings.data_sorteio)}</strong>
-          </p>
-          <p>
-            <Ticket size={16} aria-hidden="true" />
-            <strong>{formatCurrency(settings.valor_numero)}</strong> por número
-          </p>
-          <p>
-            <Hash size={16} aria-hidden="true" />
-            <strong>{loading ? '—' : stats.disponivel}</strong> disponíveis
-          </p>
+          <div className="home-fact">
+            <span className="home-fact-label">sorteio</span>
+            <strong>{formatDate(settings.data_sorteio)}</strong>
+          </div>
+          <div className="home-fact">
+            <span className="home-fact-label">unitário</span>
+            <strong>{formatCurrency(settings.valor_numero)}</strong>
+          </div>
+          <div className="home-fact">
+            <span className="home-fact-label">disponíveis</span>
+            <strong>{loading ? '—' : stats.disponivel}</strong>
+          </div>
         </div>
       </section>
 
       <section className="container home-block" id="premios">
         <header className="home-block-head">
-          <h2>Prêmios</h2>
-          <p>Escolha seus números e concorra a três presentes para o nosso lar.</p>
+          <p className="home-section-id">01 / prêmios</p>
+          <h2>O que você concorre</h2>
+          <p>Três prêmios em dinheiro. Escolha seus números e participe.</p>
         </header>
         <PrizeShowcase settings={settings} />
       </section>
 
       <section className="container home-block" id="como-funciona">
         <header className="home-block-head">
+          <p className="home-section-id">02 / fluxo</p>
           <h2>Como funciona</h2>
         </header>
         <ol className="home-steps">
           <li>
-            <span>1</span>
+            <span>01</span>
             <div>
-              <strong>Escolha os números</strong>
-              <p>Na grade ou por quantidade automática.</p>
+              <strong>Selecionar números</strong>
+              <p>Grade manual ou quantidade automática.</p>
             </div>
           </li>
           <li>
-            <span>2</span>
+            <span>02</span>
             <div>
-              <strong>Confirme seus dados</strong>
-              <p>Nome e contato para identificar sua participação.</p>
+              <strong>Confirmar dados</strong>
+              <p>Nome e contato para identificar o pedido.</p>
             </div>
           </li>
           <li>
-            <span>3</span>
+            <span>03</span>
             <div>
-              <strong>Pague e aguarde</strong>
-              <p>PIX ou cartão. Confirmação após validação.</p>
+              <strong>Pagar e aguardar</strong>
+              <p>PIX ou cartão. Liberação após validação.</p>
             </div>
           </li>
         </ol>
@@ -116,7 +125,10 @@ export function Home() {
 
       <section className="container home-block" id="regulamento">
         <details className="home-rules">
-          <summary>Regulamento</summary>
+          <summary>
+            <span className="home-section-id">03 / regras</span>
+            Regulamento
+          </summary>
           <ul>
             {regulamentoLines.map((line) => (
               <li key={line}>{line}</li>

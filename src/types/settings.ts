@@ -63,19 +63,16 @@ export const defaultSiteSettings: SiteSettings = {
   texto_casal:
     'Obrigado por fazer parte da nossa história e por celebrar conosco esse momento tão especial.',
   assinatura_casal: 'Com amor, Matheus & Melissa ♡',
-  premio_nome: 'Kit Panela Premium',
-  premio_descricao:
-    'Conjunto completo de panelas antiaderentes — o coração da nossa cozinha.',
+  premio_nome: 'R$ 500,00',
+  premio_descricao: 'Prêmio do 1º lugar',
   premio_imagem_url:
     'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?auto=format&fit=crop&w=900&q=80',
-  premio_2_nome: 'Air Fryer',
-  premio_2_descricao:
-    'Fritadeira elétrica para receitas práticas e deliciosas no dia a dia.',
+  premio_2_nome: 'R$ 400,00',
+  premio_2_descricao: 'Prêmio do 2º lugar',
   premio_2_imagem_url:
     'https://images.unsplash.com/photo-1585659722983-3a675dabf23d?auto=format&fit=crop&w=900&q=80',
-  premio_3_nome: 'Jogo de Utensílios',
-  premio_3_descricao:
-    'Kit elegante de utensílios de cozinha para preparar com muito carinho.',
+  premio_3_nome: 'R$ 100,00',
+  premio_3_descricao: 'Prêmio do 3º lugar',
   premio_3_imagem_url:
     'https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=900&q=80',
   regulamento:
