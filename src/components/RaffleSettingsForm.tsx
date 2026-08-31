@@ -182,7 +182,7 @@ export function RaffleSettingsForm({ settings, onSubmit }: RaffleSettingsFormPro
         </fieldset>
 
         <fieldset>
-          <legend>Números e reserva</legend>
+          <legend>Números</legend>
           <div className="form-grid-2">
             <label>
               Total de números
@@ -202,16 +202,6 @@ export function RaffleSettingsForm({ settings, onSubmit }: RaffleSettingsFormPro
                 step="0.01"
                 value={values.valor_numero}
                 onChange={(e) => setField('valor_numero', Number(e.target.value))}
-              />
-            </label>
-            <label>
-              Prazo de reserva (minutos)
-              <input
-                type="number"
-                min={5}
-                max={120}
-                value={values.reserva_minutos}
-                onChange={(e) => setField('reserva_minutos', Number(e.target.value))}
               />
             </label>
           </div>

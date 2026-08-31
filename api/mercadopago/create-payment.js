@@ -39,10 +39,6 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Este pedido não está aguardando pagamento.' })
     }
 
-    if (order.reservado_ate && new Date(order.reservado_ate).getTime() < Date.now()) {
-      return res.status(400).json({ error: 'A reserva deste pedido expirou.' })
-    }
-
     if (order.provider_payment_id && method === 'pix' && order.pix_copia_cola) {
       return res.status(200).json({
         provider_payment_id: order.provider_payment_id,

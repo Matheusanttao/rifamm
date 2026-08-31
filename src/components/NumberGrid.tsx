@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Hash, Search, Shuffle } from 'lucide-react'
+import { Eraser, Hash, Search, Shuffle } from 'lucide-react'
 import type { RaffleNumber } from '../types/raffle'
 import { pickRandomAvailable } from '../lib/numbers'
 
@@ -48,6 +48,11 @@ export function NumberGrid({ numbers, selected, onChange, valorNumero, disabled 
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Não foi possível selecionar números.')
     }
+  }
+
+  function handleClear() {
+    if (disabled || selected.length === 0) return
+    onChange([])
   }
 
   return (
@@ -117,8 +122,19 @@ export function NumberGrid({ numbers, selected, onChange, valorNumero, disabled 
             <strong>{selected.length}</strong> número(s) selecionado(s)
           </span>
         </div>
-        <div className="number-summary-total">
-          Total: <strong>{total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>
+        <div className="number-summary-actions">
+          <button
+            type="button"
+            className="button ghost number-clear-btn"
+            onClick={handleClear}
+            disabled={disabled || selected.length === 0}
+          >
+            <Eraser size={16} /> Limpar
+          </button>
+          <div className="number-summary-total">
+            Total:{' '}
+            <strong>{total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>
+          </div>
         </div>
       </div>
     </div>

@@ -103,8 +103,7 @@ export function ParticiparPage() {
         <div className="checkout-header">
           <h1>Participar da rifa</h1>
           <p className="muted">
-            Escolha seus números, confirme os dados e finalize o pagamento. Reserva temporária de{' '}
-            {settings.reserva_minutos} minutos ao iniciar o pagamento.
+            Escolha seus números, confirme os dados e finalize o pagamento.
           </p>
         </div>
 
@@ -174,7 +173,7 @@ export function ParticiparPage() {
 
                 {!settings.pagamento_habilitado ? (
                   <p className="demo-payment-note">
-                    Modo demonstrativo: o pedido será criado com reserva temporária, mas nenhuma
+                    Modo demonstrativo: o pedido será criado e os números ficarão reservados, mas nenhuma
                     cobrança real será processada.
                   </p>
                 ) : !isSupabaseConfigured ? (

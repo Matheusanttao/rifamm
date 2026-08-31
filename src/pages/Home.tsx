@@ -22,30 +22,7 @@ import type { RaffleNumber } from '../types/raffle'
 import type { SiteSettings } from '../types/settings'
 import { defaultSiteSettings } from '../types/settings'
 
-const COUPLE_IMAGE = '/matheus-melissa.png'
-
-function FloralMotif({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 180 180" fill="none" aria-hidden="true">
-      <g stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="86" cy="62" r="20" />
-        <circle cx="86" cy="62" r="9" />
-        <path d="M78 54c-8-10-6-22 2-28" />
-        <path d="M94 52c10-9 22-8 28 2" />
-        <path d="M86 82c-2 22-12 40-12 56" />
-        <ellipse cx="62" cy="112" rx="18" ry="9" transform="rotate(-28 62 112)" />
-        <ellipse cx="108" cy="118" rx="18" ry="9" transform="rotate(32 108 118)" />
-        <path d="M74 128c-22-2-36 12-44 28" />
-        <path d="M90 136c18 2 34 16 42 32" />
-        <circle cx="42" cy="48" r="11" />
-        <circle cx="42" cy="48" r="4.5" />
-        <circle cx="132" cy="40" r="13" />
-        <circle cx="132" cy="40" r="5.5" />
-        <path d="M132 54c2 14-4 26-14 34" />
-      </g>
-    </svg>
-  )
-}
+const COUPLE_IMAGE = '/matheus-melissa.jpg'
 
 export function Home() {
   const [settings, setSettings] = useState<SiteSettings>(defaultSiteSettings)
@@ -77,7 +54,10 @@ export function Home() {
 
   const stats = useMemo(() => getNumberStats(numbers), [numbers])
   const regulamentoLines = settings.regulamento.split('\n').filter(Boolean)
-  const heroImage = settings.hero_imagem_url || COUPLE_IMAGE
+  const heroImage =
+    settings.hero_imagem_url && !/matheus-melissa\.(png|jpg|jpeg|webp)$/i.test(settings.hero_imagem_url)
+      ? settings.hero_imagem_url
+      : COUPLE_IMAGE
   const drawDate = settings.data_sorteio ? formatDate(settings.data_sorteio) : '—'
 
   return (
@@ -85,36 +65,29 @@ export function Home() {
       <DemoBanner pagamentoHabilitado={settings.pagamento_habilitado} />
 
       <section className="home-hero">
-        <div className="container">
-          <div className="home-hero-card">
-            <FloralMotif className="home-hero-floral home-hero-floral-bl" />
-            <FloralMotif className="home-hero-floral home-hero-floral-tr" />
+        <figure className="home-hero-media home-anim home-anim-photo" style={{ '--d': '0ms' } as CSSProperties}>
+          <img src={heroImage} alt={`${settings.subtitulo_site} — foto do casal`} />
+        </figure>
+        <div className="home-hero-scrim" aria-hidden="true" />
 
-            <div className="home-hero-copy">
-              <p className="home-kicker home-anim" style={{ '--d': '0ms' } as CSSProperties}>
-                <span className="home-kicker-dot" aria-hidden="true" />
-                Rifa online · {settings.subtitulo_site}
-              </p>
-              <h1 className="home-anim" style={{ '--d': '90ms' } as CSSProperties}>
-                {settings.titulo_site}
-              </h1>
-              <p className="home-lead home-anim" style={{ '--d': '180ms' } as CSSProperties}>
-                {settings.texto_hero.trim() || defaultSiteSettings.texto_hero}
-              </p>
-              <Link
-                className="home-cta home-anim"
-                style={{ '--d': '270ms' } as CSSProperties}
-                to="/participar"
-              >
-                Entrar na rifa
-                <ArrowRight size={18} aria-hidden="true" />
-              </Link>
-            </div>
-
-            <figure className="home-hero-photo home-anim home-anim-photo" style={{ '--d': '140ms' } as CSSProperties}>
-              <img src={heroImage} alt={`${settings.subtitulo_site} — foto do casal`} />
-            </figure>
-          </div>
+        <div className="container home-hero-content">
+          <p className="home-hero-brand home-anim" style={{ '--d': '80ms' } as CSSProperties}>
+            {settings.subtitulo_site}
+          </p>
+          <h1 className="home-anim" style={{ '--d': '160ms' } as CSSProperties}>
+            {settings.titulo_site}
+          </h1>
+          <p className="home-lead home-anim" style={{ '--d': '240ms' } as CSSProperties}>
+            {(settings.texto_hero.trim() || defaultSiteSettings.texto_hero).split(/(?<=[.!?])\s+/)[0]}
+          </p>
+          <Link
+            className="home-cta home-anim"
+            style={{ '--d': '320ms' } as CSSProperties}
+            to="/participar"
+          >
+            Entrar na rifa
+            <ArrowRight size={18} aria-hidden="true" />
+          </Link>
         </div>
       </section>
 

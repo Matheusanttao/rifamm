@@ -16,7 +16,7 @@ type PaymentStatusPanelProps = {
 const statusCopy: Record<Order['status_pagamento'], { title: string; text: string; icon: typeof Clock3 }> = {
   aguardando: {
     title: 'Aguardando pagamento',
-    text: 'Seus números estão reservados temporariamente. Conclua o pagamento dentro do prazo informado.',
+    text: 'Seus números estão reservados para este pedido. Conclua o pagamento para confirmar a participação.',
     icon: Clock3,
   },
   aprovado: {
@@ -67,12 +67,6 @@ export function PaymentStatusPanel({ order }: PaymentStatusPanelProps) {
           <span>Números</span>
           <strong>{formatNumbersList(order.numeros)}</strong>
         </div>
-        {order.reservado_ate && order.status_pagamento === 'aguardando' ? (
-          <div>
-            <span>Reserva válida até</span>
-            <strong>{formatDateTime(order.reservado_ate)}</strong>
-          </div>
-        ) : null}
         {order.pago_em ? (
           <div>
             <span>Pago em</span>

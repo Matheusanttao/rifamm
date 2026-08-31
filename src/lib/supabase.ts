@@ -37,7 +37,7 @@ export type Database = {
           p_numeros: number[]
           p_reserva_minutos: number
         }
-        Returns: { sucesso: boolean; mensagem: string }
+        Returns: { sucesso: boolean; mensagem: string }[]
       }
       liberar_reservas_expiradas: {
         Args: Record<string, never>

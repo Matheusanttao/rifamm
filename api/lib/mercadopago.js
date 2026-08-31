@@ -58,7 +58,6 @@ export function mapPaymentStatus(mpStatus) {
 
 export async function createPixPayment({ order, baseUrl, idempotencyKey }) {
   const payer = splitName(order.participante_nome)
-  const expiration = order.reservado_ate || new Date(Date.now() + 15 * 60_000).toISOString()
 
   const payment = await mpFetch('/v1/payments', {
     method: 'POST',
@@ -70,7 +69,6 @@ export async function createPixPayment({ order, baseUrl, idempotencyKey }) {
       description: `Rifa ${order.codigo} — ${order.numeros.length} número(s)`,
       payment_method_id: 'pix',
       external_reference: order.id,
-      date_of_expiration: expiration,
       payer: {
         email: order.participante_email,
         first_name: payer.first_name,
@@ -96,8 +94,6 @@ export async function createPixPayment({ order, baseUrl, idempotencyKey }) {
 }
 
 export async function createCardCheckout({ order, baseUrl, idempotencyKey }) {
-  const expiration = order.reservado_ate || new Date(Date.now() + 15 * 60_000).toISOString()
-
   const preference = await mpFetch('/checkout/preferences', {
     method: 'POST',
     headers: {
@@ -138,7 +134,6 @@ export async function createCardCheckout({ order, baseUrl, idempotencyKey }) {
       },
       auto_return: 'approved',
       notification_url: `${baseUrl}/api/mercadopago/webhook`,
-      expiration_date_to: expiration,
     }),
   })
 

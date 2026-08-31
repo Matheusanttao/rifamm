@@ -1,7 +1,7 @@
 import type { CreateOrderInput, Order, PaymentMethod } from '../types/raffle'
 import type { SiteSettings } from '../types/settings'
 import { generateOrderCode } from './format'
-import { releaseNumbersLocally, reserveNumbersLocally } from './numbers'
+import { reserveNumbersLocally } from './numbers'
 import { isSupabaseConfigured, supabase } from './supabase'
 
 const ORDERS_KEY = 'rifa_pedidos_demo'
@@ -38,7 +38,6 @@ export async function createOrder(
 ): Promise<Order> {
   const valorTotal = input.numeros.length * settings.valor_numero
   const now = new Date().toISOString()
-  const reservadoAte = new Date(Date.now() + settings.reserva_minutos * 60_000).toISOString()
 
   if (!isSupabaseConfigured) {
     const id = crypto.randomUUID()
@@ -53,7 +52,7 @@ export async function createOrder(
       status_pagamento: 'aguardando',
       metodo_pagamento: input.metodo_pagamento,
       ...emptyPaymentFields(),
-      reservado_ate: reservadoAte,
+      reservado_ate: null,
       pago_em: null,
       created_at: now,
       updated_at: now,
@@ -63,7 +62,7 @@ export async function createOrder(
     order.pix_qr_base64 = null
     order.checkout_url = null
     order.provider_payment_id = null
-    await reserveNumbersLocally(order.numeros, order.id, settings.reserva_minutos, settings)
+    await reserveNumbersLocally(order.numeros, order.id, settings)
 
     const orders = readLocalOrders()
     orders.unshift(order)
@@ -82,7 +81,7 @@ export async function createOrder(
       valor_total: valorTotal,
       status_pagamento: 'aguardando',
       metodo_pagamento: input.metodo_pagamento,
-      reservado_ate: reservadoAte,
+      reservado_ate: null,
     })
     .select('*')
     .single()
@@ -92,13 +91,32 @@ export async function createOrder(
   const { data: reserveResult, error: reserveError } = await supabase.rpc('reservar_numeros', {
     p_pedido_id: inserted.id,
     p_numeros: input.numeros,
-    p_reserva_minutos: settings.reserva_minutos,
+    p_reserva_minutos: 0,
   })
 
-  if (reserveError) throw new Error(reserveError.message)
-  if (!reserveResult?.sucesso) throw new Error(reserveResult?.mensagem || 'Números indisponíveis.')
+  if (reserveError) {
+    // Sem policy de delete para anon; falha silenciosa deixa pedido órfão sem números.
+    await supabase.from('pedidos').delete().eq('id', inserted.id)
+    throw new Error(reserveError.message)
+  }
 
-  return inserted
+  // RPC RETURNS TABLE → o client devolve array [{ sucesso, mensagem }]
+  const reserveRow = (Array.isArray(reserveResult) ? reserveResult[0] : reserveResult) as
+    | { sucesso?: boolean; mensagem?: string }
+    | undefined
+
+  if (!reserveRow?.sucesso) {
+    await supabase.from('pedidos').delete().eq('id', inserted.id)
+    throw new Error(reserveRow?.mensagem || 'Números indisponíveis.')
+  }
+
+  const { data: reservedOrder } = await supabase
+    .from('pedidos')
+    .select('*')
+    .eq('id', inserted.id)
+    .maybeSingle()
+
+  return reservedOrder || inserted
 }
 
 export async function fetchOrder(id: string): Promise<Order | null> {
@@ -149,20 +167,7 @@ export async function searchOrders(codigo: string, email: string): Promise<Order
 }
 
 async function refreshLocalOrderStatus(order: Order): Promise<Order> {
-  if (order.status_pagamento !== 'aguardando' || !order.reservado_ate) return order
-
-  if (new Date(order.reservado_ate).getTime() > Date.now()) return order
-
-  const expired: Order = { ...order, status_pagamento: 'expirado', updated_at: new Date().toISOString() }
-  const orders = readLocalOrders().map((item) => (item.id === order.id ? expired : item))
-  writeLocalOrders(orders)
-
-  const settings = JSON.parse(localStorage.getItem('rifa_site_settings') || '{}')
-  await releaseNumbersLocally(order.numeros, {
-    total_numeros: settings.total_numeros || 200,
-  } as SiteSettings)
-
-  return expired
+  return order
 }
 
 export function getPixQrUrl(copiaCola: string, base64?: string | null) {

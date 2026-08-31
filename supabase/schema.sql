@@ -136,37 +136,21 @@ drop policy if exists "Admin atualiza numeros" on public.rifa_numeros;
 create policy "Admin atualiza numeros"
 on public.rifa_numeros for update to authenticated using (true) with check (true);
 
--- Libera reservas expiradas
+-- Libera reservas expiradas (desativada: sem prazo automático)
 create or replace function public.liberar_reservas_expiradas()
 returns int
 language plpgsql
 security definer
 set search_path = public
 as $$
-declare
-  liberados int;
 begin
-  update public.rifa_numeros
-  set status = 'disponivel', pedido_id = null, reservado_ate = null
-  where status = 'reservado'
-    and reservado_ate is not null
-    and reservado_ate < now();
-
-  get diagnostics liberados = row_count;
-
-  update public.pedidos
-  set status_pagamento = 'expirado', updated_at = now()
-  where status_pagamento = 'aguardando'
-    and reservado_ate is not null
-    and reservado_ate < now();
-
-  return liberados;
+  return 0;
 end;
 $$;
 
 grant execute on function public.liberar_reservas_expiradas() to anon, authenticated;
 
--- Reserva atômica de números
+-- Reserva atômica de números (sem expiração por tempo)
 create or replace function public.reservar_numeros(
   p_pedido_id uuid,
   p_numeros int[],
@@ -179,10 +163,7 @@ set search_path = public
 as $$
 declare
   v_numero int;
-  v_reservado_ate timestamptz := now() + make_interval(mins => p_reserva_minutos);
 begin
-  perform public.liberar_reservas_expiradas();
-
   if p_numeros is null or array_length(p_numeros, 1) is null then
     return query select false, 'Nenhum número informado.';
     return;
@@ -196,7 +177,7 @@ begin
   end loop;
 
   update public.rifa_numeros
-  set status = 'reservado', pedido_id = p_pedido_id, reservado_ate = v_reservado_ate
+  set status = 'reservado', pedido_id = p_pedido_id, reservado_ate = null
   where numero = any(p_numeros) and status = 'disponivel';
 
   if (select count(*) from public.rifa_numeros where numero = any(p_numeros) and status = 'reservado' and pedido_id = p_pedido_id) <> array_length(p_numeros, 1) then
@@ -209,7 +190,7 @@ begin
   end if;
 
   update public.pedidos
-  set reservado_ate = v_reservado_ate, updated_at = now()
+  set reservado_ate = null, updated_at = now()
   where id = p_pedido_id;
 
   return query select true, 'Números reservados com sucesso.';

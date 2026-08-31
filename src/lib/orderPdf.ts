@@ -84,9 +84,6 @@ export function downloadOrderPdf(order: Order, settings: SiteSettings) {
   ]
 
   if (order.pago_em) rows.push(['Pago em', formatDateTime(order.pago_em)])
-  if (order.reservado_ate && order.status_pagamento === 'aguardando') {
-    rows.push(['Reserva até', formatDateTime(order.reservado_ate)])
-  }
   if (settings.data_sorteio) rows.push(['Sorteio', formatDate(settings.data_sorteio)])
 
   setFill(doc, COLORS.white)

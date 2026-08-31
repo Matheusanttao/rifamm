@@ -1,6 +1,8 @@
 import { Heart, Search, Ticket } from 'lucide-react'
 import { Link, NavLink, Outlet, Route, Routes } from 'react-router-dom'
+import { DemoBanner } from './components/DemoBanner'
 import { AdminLayout } from './layouts/AdminLayout'
+import { SiteProvider, useSite } from './lib/site-context'
 import { AdminDashboard } from './pages/AdminDashboard'
 import { AdminLogin } from './pages/AdminLogin'
 import { AdminOrders } from './pages/AdminOrders'
@@ -11,6 +13,8 @@ import { OrderPage } from './pages/OrderPage'
 import { ParticiparPage } from './pages/ParticiparPage'
 
 function PublicLayout() {
+  const { settings } = useSite()
+
   return (
     <div className="site-shell">
       <header className="site-header">
@@ -41,6 +45,8 @@ function PublicLayout() {
         </div>
       </header>
 
+      <DemoBanner pagamentoHabilitado={settings.pagamento_habilitado} />
+
       <Outlet />
 
       <footer className="site-footer">
@@ -60,7 +66,13 @@ function PublicLayout() {
 function App() {
   return (
     <Routes>
-      <Route element={<PublicLayout />}>
+      <Route
+        element={
+          <SiteProvider>
+            <PublicLayout />
+          </SiteProvider>
+        }
+      >
         <Route path="/" element={<Home />} />
         <Route path="/participar" element={<ParticiparPage />} />
         <Route path="/buscar" element={<BuscarPedidoPage />} />

@@ -17,7 +17,7 @@ function buildDemoNumbers(total: number): RaffleNumber[] {
       numero,
       status,
       pedido_id: status === 'disponivel' ? null : 'demo',
-      reservado_ate: status === 'reservado' ? new Date(Date.now() + 10 * 60_000).toISOString() : null,
+      reservado_ate: null,
     }
   })
 }
@@ -53,19 +53,8 @@ export function getNumberStats(numbers: RaffleNumber[]): NumberStats {
 
 export async function fetchRaffleNumbers(settings: SiteSettings): Promise<RaffleNumber[]> {
   if (!isSupabaseConfigured) {
-    const numbers = readLocalNumbers(settings.total_numeros)
-    const now = Date.now()
-    const updated = numbers.map((item) => {
-      if (item.status === 'reservado' && item.reservado_ate && new Date(item.reservado_ate).getTime() < now) {
-        return { ...item, status: 'disponivel' as const, pedido_id: null, reservado_ate: null }
-      }
-      return item
-    })
-    writeLocalNumbers(updated)
-    return updated
+    return readLocalNumbers(settings.total_numeros)
   }
-
-  await supabase.rpc('liberar_reservas_expiradas')
 
   const { data, error } = await supabase
     .from('rifa_numeros')
@@ -94,12 +83,9 @@ export function pickRandomAvailable(numbers: RaffleNumber[], quantity: number): 
 export async function reserveNumbersLocally(
   numeros: number[],
   pedidoId: string,
-  reservaMinutos: number,
   settings: SiteSettings,
 ): Promise<void> {
   const all = await fetchRaffleNumbers(settings)
-  const now = Date.now()
-  const reservadoAte = new Date(now + reservaMinutos * 60_000).toISOString()
 
   const unavailable = numeros.filter((numero) => {
     const item = all.find((n) => n.numero === numero)
@@ -112,7 +98,7 @@ export async function reserveNumbersLocally(
 
   const updated = all.map((item) =>
     numeros.includes(item.numero)
-      ? { ...item, status: 'reservado' as const, pedido_id: pedidoId, reservado_ate: reservadoAte }
+      ? { ...item, status: 'reservado' as const, pedido_id: pedidoId, reservado_ate: null }
       : item,
   )
 

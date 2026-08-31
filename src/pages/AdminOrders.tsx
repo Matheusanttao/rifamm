@@ -55,7 +55,7 @@ export function AdminOrders() {
                   <th>Total</th>
                   <th>Método</th>
                   <th>Status</th>
-                  <th>Reserva até</th>
+                  <th>Criado em</th>
                 </tr>
               </thead>
               <tbody>
@@ -73,7 +73,7 @@ export function AdminOrders() {
                     <td>
                       <StatusBadge status={order.status_pagamento} variant="payment" inline />
                     </td>
-                    <td>{formatDateTime(order.reservado_ate)}</td>
+                    <td>{formatDateTime(order.created_at)}</td>
                   </tr>
                 ))}
               </tbody>
