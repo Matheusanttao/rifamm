@@ -4,6 +4,7 @@ import {
   getBaseUrl,
 } from '../lib/mercadopago.js'
 import {
+  cancelPendingOrder,
   fetchOrderById,
   fetchSiteSettings,
   updateOrder,
@@ -14,9 +15,9 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  try {
-    const { orderId, method } = req.body || {}
+  const { orderId, method } = req.body || {}
 
+  try {
     if (!orderId || !method) {
       return res.status(400).json({ error: 'Informe orderId e method (pix ou cartao).' })
     }
@@ -81,6 +82,13 @@ export default async function handler(req, res) {
     })
   } catch (error) {
     console.error('create-payment error:', error)
+    if (orderId) {
+      try {
+        await cancelPendingOrder(orderId, 'cancelado')
+      } catch (cancelError) {
+        console.error('Falha ao liberar números após erro no pagamento:', cancelError)
+      }
+    }
     return res.status(500).json({
       error: error instanceof Error ? error.message : 'Erro ao criar pagamento.',
     })

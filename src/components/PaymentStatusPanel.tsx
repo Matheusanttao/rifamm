@@ -36,7 +36,7 @@ const statusCopy: Record<Order['status_pagamento'], { title: string; text: strin
   },
   cancelado: {
     title: 'Pedido cancelado',
-    text: 'Este pedido foi cancelado e os números não estão mais vinculados a você.',
+    text: 'Este pedido foi cancelado e os números já estão disponíveis para outras pessoas comprarem.',
     icon: Ban,
   },
 }

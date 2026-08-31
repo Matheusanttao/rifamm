@@ -2,7 +2,7 @@ import type { CreateOrderInput, Order, PaymentMethod } from '../types/raffle'
 import type { SiteSettings } from '../types/settings'
 import { isValidCpf, normalizeCpf } from './cpf'
 import { generateOrderCode } from './format'
-import { reserveNumbersLocally } from './numbers'
+import { releaseNumbersLocally, reserveNumbersLocally } from './numbers'
 import { isSupabaseConfigured, supabase } from './supabase'
 
 const ORDERS_KEY = 'rifa_pedidos_demo'
@@ -211,6 +211,37 @@ export async function applyPaymentDataToOrder(
   // O PIX/checkout já é gravado pela API (/api/mercadopago/create-payment) com service role.
   // Anon não tem policy de UPDATE em pedidos — buscar evita "Cannot coerce to single JSON object".
   return fetchOrder(orderId)
+}
+
+export async function cancelPendingOrder(orderId: string, settings: SiteSettings): Promise<boolean> {
+  if (!isSupabaseConfigured) {
+    const orders = readLocalOrders()
+    const index = orders.findIndex((item) => item.id === orderId)
+    if (index === -1) return false
+    if (orders[index].status_pagamento !== 'aguardando') return false
+
+    await releaseNumbersLocally(orders[index].numeros, settings)
+    orders[index] = {
+      ...orders[index],
+      status_pagamento: 'cancelado',
+      updated_at: new Date().toISOString(),
+    }
+    writeLocalOrders(orders)
+    return true
+  }
+
+  const response = await fetch('/api/orders/cancel-pending', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ orderId }),
+  })
+
+  const data = await response.json().catch(() => ({}))
+  if (!response.ok) {
+    throw new Error(data.error || 'Não foi possível cancelar o pedido.')
+  }
+
+  return Boolean(data.released)
 }
 
 export function paymentMethodLabel(method: PaymentMethod | null) {

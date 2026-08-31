@@ -6,8 +6,16 @@ import { NumberGrid } from '../components/NumberGrid'
 import { OrderSummary } from '../components/OrderSummary'
 import { PaymentCard } from '../components/PaymentCard'
 import { formatCpf, isValidCpf, normalizeCpf } from '../lib/cpf'
+import {
+  formatEmailInput,
+  formatPersonName,
+  formatPhone,
+  isValidEmail,
+  isValidPhone,
+  normalizePhone,
+} from '../lib/form-masks'
 import { initMercadoPagoPayment } from '../lib/mercadopago'
-import { applyPaymentDataToOrder, createOrder } from '../lib/orders'
+import { applyPaymentDataToOrder, cancelPendingOrder, createOrder } from '../lib/orders'
 import { useSite } from '../lib/site-context'
 import { isSupabaseConfigured } from '../lib/supabase'
 import type { PaymentMethod } from '../types/raffle'
@@ -29,10 +37,25 @@ export function ParticiparPage() {
   const [metodo, setMetodo] = useState<PaymentMethod>('pix')
 
   const cpfValido = isValidCpf(cpf)
+  const emailValido = isValidEmail(email)
+  const telefoneValido = isValidPhone(telefone)
+  const nomeValido = nome.trim().length >= 3
 
   function handleContinueToPayment() {
+    if (!nomeValido) {
+      setError('Informe seu nome completo.')
+      return
+    }
+    if (!emailValido) {
+      setError('Informe um e-mail válido.')
+      return
+    }
     if (!cpfValido) {
       setError('Informe um CPF válido.')
+      return
+    }
+    if (!telefoneValido) {
+      setError('Informe um telefone válido com DDD.')
       return
     }
     setError('')
@@ -49,6 +72,8 @@ export function ParticiparPage() {
     setSubmitting(true)
     setError('')
 
+    let createdOrderId: string | null = null
+
     try {
       const order = await createOrder(
         {
@@ -61,6 +86,7 @@ export function ParticiparPage() {
         },
         settings,
       )
+      createdOrderId = order.id
 
       if (settings.pagamento_habilitado && isSupabaseConfigured) {
         const payment = await initMercadoPagoPayment(order.id, metodo)
@@ -75,6 +101,13 @@ export function ParticiparPage() {
       await refreshNumbers()
       navigate(`/pedido/${order.id}`)
     } catch (err) {
+      if (createdOrderId && settings.pagamento_habilitado && isSupabaseConfigured) {
+        try {
+          await cancelPendingOrder(createdOrderId, settings)
+        } catch (cancelError) {
+          console.error(cancelError)
+        }
+      }
       setError(err instanceof Error ? err.message : 'Não foi possível criar o pedido.')
       await refreshNumbers()
     } finally {
@@ -123,12 +156,30 @@ export function ParticiparPage() {
               >
                 <label>
                   Nome completo
-                  <input value={nome} onChange={(e) => setNome(e.target.value)} required />
+                  <input
+                    type="text"
+                    autoComplete="name"
+                    value={nome}
+                    onChange={(e) => setNome(formatPersonName(e.target.value))}
+                    placeholder="Maria da Silva"
+                    required
+                  />
                 </label>
                 <label>
                   E-mail
-                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                  <input
+                    type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => setEmail(formatEmailInput(e.target.value))}
+                    placeholder="seu@email.com"
+                    required
+                  />
                 </label>
+                {!emailValido && email.includes('@') ? (
+                  <p className="form-error">E-mail inválido. Confira o endereço digitado.</p>
+                ) : null}
                 <label>
                   CPF
                   <input
@@ -149,14 +200,24 @@ export function ParticiparPage() {
                   Telefone / WhatsApp
                   <input
                     type="tel"
+                    inputMode="numeric"
+                    autoComplete="tel"
                     value={telefone}
-                    onChange={(e) => setTelefone(e.target.value)}
+                    onChange={(e) => setTelefone(formatPhone(e.target.value))}
                     placeholder="(11) 99999-9999"
+                    maxLength={15}
                     required
                   />
                 </label>
+                {!telefoneValido && normalizePhone(telefone).length > 0 ? (
+                  <p className="form-error">Informe o telefone completo com DDD.</p>
+                ) : null}
                 {error ? <p className="form-error">{error}</p> : null}
-                <button className="button primary" type="submit" disabled={!cpfValido}>
+                <button
+                  className="button primary"
+                  type="submit"
+                  disabled={!nomeValido || !emailValido || !cpfValido || !telefoneValido}
+                >
                   Continuar <ArrowRight size={16} />
                 </button>
               </form>
@@ -240,7 +301,7 @@ export function ParticiparPage() {
                 <button
                   type="button"
                   className="button primary full"
-                  disabled={!nome.trim() || !email.trim() || !telefone.trim() || !cpfValido}
+                  disabled={!nomeValido || !emailValido || !telefoneValido || !cpfValido}
                   onClick={handleContinueToPayment}
                 >
                   Ir para pagamento <ArrowRight size={16} />

@@ -13,7 +13,7 @@ import type { SiteSettings } from '../types/settings'
 
 export function OrderPage() {
   const { id } = useParams<{ id: string }>()
-  const { settings } = useSite()
+  const { settings, refreshNumbers } = useSite()
   const [order, setOrder] = useState<Order | null>(null)
   const [loading, setLoading] = useState(true)
   const [paymentLoading, setPaymentLoading] = useState(false)
@@ -90,7 +90,17 @@ export function OrderPage() {
     const interval = window.setInterval(() => {
       if (!id) return
       void refreshOrder(id, true).then((pedido) => {
-        if (pedido) setOrder(pedido)
+        if (pedido) {
+          setOrder((current) => {
+            if (
+              current?.status_pagamento === 'aguardando' &&
+              pedido.status_pagamento !== 'aguardando'
+            ) {
+              void refreshNumbers()
+            }
+            return pedido
+          })
+        }
       })
     }, 5000)
 
