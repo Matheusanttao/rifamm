@@ -25,3 +25,18 @@ export async function initMercadoPagoPayment(
 
   return data as MercadoPagoPaymentResult
 }
+
+/** Consulta o Mercado Pago e atualiza o pedido se já estiver pago. */
+export async function syncMercadoPagoPayment(orderId: string): Promise<{ status?: string }> {
+  const response = await fetch('/api/mercadopago/sync-payment', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ orderId }),
+  })
+
+  const data = await response.json().catch(() => ({}))
+  if (!response.ok) {
+    throw new Error(data.error || 'Não foi possível verificar o pagamento.')
+  }
+  return data as { status?: string }
+}

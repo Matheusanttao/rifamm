@@ -223,7 +223,7 @@ begin
 end;
 $$;
 
-grant execute on function public.confirmar_pagamento_pedido(uuid) to authenticated;
+grant execute on function public.confirmar_pagamento_pedido(uuid) to authenticated, service_role;
 
 -- Inicializa números com base nas configurações
 create or replace function public.inicializar_numeros_rifa()

@@ -110,8 +110,14 @@ export function ParticiparPage() {
                   <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
                 </label>
                 <label>
-                  Telefone (opcional)
-                  <input value={telefone} onChange={(e) => setTelefone(e.target.value)} />
+                  Telefone / WhatsApp
+                  <input
+                    type="tel"
+                    value={telefone}
+                    onChange={(e) => setTelefone(e.target.value)}
+                    placeholder="(11) 99999-9999"
+                    required
+                  />
                 </label>
                 <button className="button primary" type="submit">
                   Continuar <ArrowRight size={16} />

@@ -36,6 +36,11 @@ export async function createOrder(
   input: CreateOrderInput,
   settings: SiteSettings,
 ): Promise<Order> {
+  const telefone = input.participante_telefone.trim()
+  if (!telefone) {
+    throw new Error('Informe o telefone / WhatsApp.')
+  }
+
   const valorTotal = input.numeros.length * settings.valor_numero
   const now = new Date().toISOString()
 
@@ -46,7 +51,7 @@ export async function createOrder(
       codigo: generateOrderCode(),
       participante_nome: input.participante_nome.trim(),
       participante_email: input.participante_email.trim(),
-      participante_telefone: input.participante_telefone?.trim() || null,
+      participante_telefone: telefone,
       numeros: [...input.numeros].sort((a, b) => a - b),
       valor_total: valorTotal,
       status_pagamento: 'aguardando',
@@ -76,7 +81,7 @@ export async function createOrder(
       codigo: generateOrderCode(),
       participante_nome: input.participante_nome.trim(),
       participante_email: input.participante_email.trim(),
-      participante_telefone: input.participante_telefone?.trim() || null,
+      participante_telefone: telefone,
       numeros: input.numeros,
       valor_total: valorTotal,
       status_pagamento: 'aguardando',

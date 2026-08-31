@@ -11,7 +11,7 @@ type NumberGridProps = {
   disabled?: boolean
 }
 
-type Filter = 'todos' | 'disponivel' | 'reservado' | 'vendido'
+type Filter = 'todos' | 'disponivel' | 'vendido'
 
 export function NumberGrid({ numbers, selected, onChange, valorNumero, disabled }: NumberGridProps) {
   const [search, setSearch] = useState('')
@@ -20,6 +20,8 @@ export function NumberGrid({ numbers, selected, onChange, valorNumero, disabled 
 
   const filtered = useMemo(() => {
     return numbers.filter((item) => {
+      // Reservados não aparecem no filtro público (ficam indisponíveis no fluxo)
+      if (item.status === 'reservado') return false
       if (filter !== 'todos' && item.status !== filter) return false
       if (!search.trim()) return true
       return String(item.numero).includes(search.trim())
@@ -59,7 +61,7 @@ export function NumberGrid({ numbers, selected, onChange, valorNumero, disabled 
     <div className="number-grid-panel">
       <div className="number-grid-toolbar">
         <div className="number-grid-filters">
-          {(['disponivel', 'reservado', 'vendido', 'todos'] as Filter[]).map((item) => (
+          {(['disponivel', 'vendido', 'todos'] as Filter[]).map((item) => (
             <button
               key={item}
               type="button"

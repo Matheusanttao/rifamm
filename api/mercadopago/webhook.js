@@ -1,14 +1,8 @@
 import {
   fetchMercadoPagoPayment,
-  mapPaymentStatus,
 } from '../lib/mercadopago.js'
-import {
-  confirmOrderPayment,
-  fetchOrderById,
-  releaseExpiredOrder,
-  releaseOrderNumbers,
-  updateOrder,
-} from '../lib/supabase-admin.js'
+import { applyMercadoPagoStatus } from '../lib/apply-payment-status.js'
+import { fetchOrderById } from '../lib/supabase-admin.js'
 
 async function processPaymentNotification(paymentId) {
   const payment = await fetchMercadoPagoPayment(paymentId)
@@ -25,39 +19,7 @@ async function processPaymentNotification(paymentId) {
     return { ok: true, skipped: true }
   }
 
-  const status = mapPaymentStatus(payment.status)
-
-  if (status === 'aprovado') {
-    await confirmOrderPayment(orderId)
-    await updateOrder(orderId, {
-      provider_payment_id: String(payment.id),
-      pago_em: payment.date_approved || new Date().toISOString(),
-    })
-    return { ok: true, status: 'aprovado', orderId }
-  }
-
-  if (status === 'expirado' || status === 'cancelado') {
-    if (order.status_pagamento === 'aguardando') {
-      await releaseExpiredOrder(orderId)
-    }
-    return { ok: true, status, orderId }
-  }
-
-  if (status === 'recusado') {
-    await updateOrder(orderId, {
-      status_pagamento: 'recusado',
-      provider_payment_id: String(payment.id),
-    })
-    await releaseOrderNumbers(order)
-    return { ok: true, status: 'recusado', orderId }
-  }
-
-  await updateOrder(orderId, {
-    provider_payment_id: String(payment.id),
-    status_pagamento: 'aguardando',
-  })
-
-  return { ok: true, status: 'aguardando', orderId }
+  return applyMercadoPagoStatus(order, payment)
 }
 
 export default async function handler(req, res) {

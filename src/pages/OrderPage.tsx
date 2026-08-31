@@ -4,7 +4,7 @@ import { Link, useParams } from 'react-router-dom'
 import { PaymentCard } from '../components/PaymentCard'
 import { PaymentPix } from '../components/PaymentPix'
 import { PaymentStatusPanel } from '../components/PaymentStatusPanel'
-import { initMercadoPagoPayment } from '../lib/mercadopago'
+import { initMercadoPagoPayment, syncMercadoPagoPayment } from '../lib/mercadopago'
 import { downloadOrderPdf } from '../lib/orderPdf'
 import { applyPaymentDataToOrder, fetchOrder } from '../lib/orders'
 import { useSite } from '../lib/site-context'
@@ -49,6 +49,24 @@ export function OrderPage() {
       }
     }
 
+    async function refreshOrder(orderId: string, withSync: boolean) {
+      let pedido = await fetchOrder(orderId)
+      if (
+        withSync &&
+        pedido?.status_pagamento === 'aguardando' &&
+        settings.pagamento_habilitado &&
+        isSupabaseConfigured
+      ) {
+        try {
+          await syncMercadoPagoPayment(orderId)
+          pedido = await fetchOrder(orderId)
+        } catch (err) {
+          console.error(err)
+        }
+      }
+      return pedido
+    }
+
     async function load() {
       if (!id) return
       try {
@@ -58,6 +76,9 @@ export function OrderPage() {
           return
         }
         pedido = (await ensurePayment(pedido, settings)) || pedido
+        if (pedido.status_pagamento === 'aguardando') {
+          pedido = (await refreshOrder(pedido.id, true)) || pedido
+        }
         setOrder(pedido)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Erro ao carregar pedido.')
@@ -69,10 +90,10 @@ export function OrderPage() {
 
     const interval = window.setInterval(() => {
       if (!id) return
-      void fetchOrder(id).then((pedido) => {
+      void refreshOrder(id, true).then((pedido) => {
         if (pedido) setOrder(pedido)
       })
-    }, 10000)
+    }, 5000)
 
     return () => window.clearInterval(interval)
   }, [id, settings])
