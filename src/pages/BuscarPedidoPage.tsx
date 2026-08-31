@@ -1,23 +1,20 @@
 import { useState, type CSSProperties, type FormEvent } from 'react'
 import { ArrowRight, FileDown, Search } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { DemoBanner } from '../components/DemoBanner'
 import { StatusBadge } from '../components/StatusBadge'
 import { formatCurrency, formatDateTime, formatNumbersList } from '../lib/format'
 import { downloadOrderPdf } from '../lib/orderPdf'
 import { paymentMethodLabel, searchOrders } from '../lib/orders'
-import { fetchSiteSettings } from '../lib/settings'
+import { useSite } from '../lib/site-context'
 import type { Order } from '../types/raffle'
-import type { SiteSettings } from '../types/settings'
-import { defaultSiteSettings } from '../types/settings'
 
 export function BuscarPedidoPage() {
+  const { settings } = useSite()
   const [codigo, setCodigo] = useState('')
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [orders, setOrders] = useState<Order[]>([])
-  const [settings, setSettings] = useState<SiteSettings>(defaultSiteSettings)
   const [searched, setSearched] = useState(false)
 
   async function handleSubmit(event: FormEvent) {
@@ -27,8 +24,6 @@ export function BuscarPedidoPage() {
     setSearched(true)
 
     try {
-      const siteSettings = await fetchSiteSettings()
-      setSettings(siteSettings)
       const found = await searchOrders(codigo, email)
       setOrders(found)
       if (found.length === 0) {
@@ -44,8 +39,6 @@ export function BuscarPedidoPage() {
 
   return (
     <main className="buscar-page">
-      <DemoBanner pagamentoHabilitado={settings.pagamento_habilitado} />
-
       <div className="container buscar-shell">
         <section className="buscar-card" style={{ '--d': '0ms' } as CSSProperties}>
           <p className="home-section-id">Consulta</p>

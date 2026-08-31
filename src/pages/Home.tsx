@@ -13,21 +13,16 @@ import {
   Users,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { DemoBanner } from '../components/DemoBanner'
 import { PrizeShowcase } from '../components/PrizeShowcase'
-import { fetchRaffleNumbers, getNumberStats, syncNumbersWithSettings } from '../lib/numbers'
-import { fetchSiteSettings } from '../lib/settings'
+import { getNumberStats } from '../lib/numbers'
+import { useSite } from '../lib/site-context'
 import { formatCurrency, formatDate } from '../lib/format'
-import type { RaffleNumber } from '../types/raffle'
-import type { SiteSettings } from '../types/settings'
 import { defaultSiteSettings } from '../types/settings'
 
 const COUPLE_IMAGE = '/matheus-melissa.jpg'
 
 export function Home() {
-  const [settings, setSettings] = useState<SiteSettings>(defaultSiteSettings)
-  const [numbers, setNumbers] = useState<RaffleNumber[]>([])
-  const [loading, setLoading] = useState(true)
+  const { settings, numbers } = useSite()
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
@@ -35,21 +30,6 @@ export function Home() {
       requestAnimationFrame(() => setReady(true))
     })
     return () => cancelAnimationFrame(frame)
-  }, [])
-
-  useEffect(() => {
-    async function load() {
-      try {
-        const siteSettings = await fetchSiteSettings()
-        await syncNumbersWithSettings(siteSettings)
-        const raffleNumbers = await fetchRaffleNumbers(siteSettings)
-        setSettings(siteSettings)
-        setNumbers(raffleNumbers)
-      } finally {
-        setLoading(false)
-      }
-    }
-    void load()
   }, [])
 
   const stats = useMemo(() => getNumberStats(numbers), [numbers])
@@ -62,8 +42,6 @@ export function Home() {
 
   return (
     <main className={`home-simple${ready ? ' is-ready' : ''}`}>
-      <DemoBanner pagamentoHabilitado={settings.pagamento_habilitado} />
-
       <section className="home-hero">
         <figure className="home-hero-media home-anim home-anim-photo" style={{ '--d': '0ms' } as CSSProperties}>
           <img src={heroImage} alt={`${settings.subtitulo_site} — foto do casal`} />
@@ -118,7 +96,7 @@ export function Home() {
           </span>
           <div>
             <span className="home-fact-label">Disponíveis</span>
-            <strong>{loading ? '—' : stats.disponivel}</strong>
+            <strong>{stats.disponivel}</strong>
             <span className="home-fact-hint">números</span>
           </div>
         </article>

@@ -1,23 +1,21 @@
 import { useEffect, useState } from 'react'
 import { ArrowLeft, FileDown } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
-import { DemoBanner } from '../components/DemoBanner'
 import { PaymentCard } from '../components/PaymentCard'
 import { PaymentPix } from '../components/PaymentPix'
 import { PaymentStatusPanel } from '../components/PaymentStatusPanel'
 import { initMercadoPagoPayment } from '../lib/mercadopago'
 import { downloadOrderPdf } from '../lib/orderPdf'
 import { applyPaymentDataToOrder, fetchOrder } from '../lib/orders'
-import { fetchSiteSettings } from '../lib/settings'
+import { useSite } from '../lib/site-context'
 import { isSupabaseConfigured } from '../lib/supabase'
 import type { Order } from '../types/raffle'
 import type { SiteSettings } from '../types/settings'
-import { defaultSiteSettings } from '../types/settings'
 
 export function OrderPage() {
   const { id } = useParams<{ id: string }>()
+  const { settings } = useSite()
   const [order, setOrder] = useState<Order | null>(null)
-  const [settings, setSettings] = useState<SiteSettings>(defaultSiteSettings)
   const [loading, setLoading] = useState(true)
   const [paymentLoading, setPaymentLoading] = useState(false)
   const [error, setError] = useState('')
@@ -54,14 +52,12 @@ export function OrderPage() {
     async function load() {
       if (!id) return
       try {
-        const siteSettings = await fetchSiteSettings()
         let pedido = await fetchOrder(id)
         if (!pedido) {
           setError('Pedido não encontrado.')
           return
         }
-        pedido = (await ensurePayment(pedido, siteSettings)) || pedido
-        setSettings(siteSettings)
+        pedido = (await ensurePayment(pedido, settings)) || pedido
         setOrder(pedido)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Erro ao carregar pedido.')
@@ -79,15 +75,13 @@ export function OrderPage() {
     }, 10000)
 
     return () => window.clearInterval(interval)
-  }, [id])
+  }, [id, settings])
 
   if (loading) return <p className="loading-message container">Carregando pedido...</p>
   if (error || !order) return <p className="form-error container">{error || 'Pedido não encontrado.'}</p>
 
   return (
     <main className="order-page">
-      <DemoBanner pagamentoHabilitado={settings.pagamento_habilitado} />
-
       <div className="container checkout-shell">
         <div className="order-page-nav">
           <Link className="back-link" to="/participar">

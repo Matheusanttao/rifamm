@@ -1,29 +1,23 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { ArrowLeft, ArrowRight, CreditCard, QrCode } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
-import { DemoBanner } from '../components/DemoBanner'
 import { NumberGrid } from '../components/NumberGrid'
 import { OrderSummary } from '../components/OrderSummary'
 import { PaymentCard } from '../components/PaymentCard'
-import { fetchRaffleNumbers, syncNumbersWithSettings } from '../lib/numbers'
 import { initMercadoPagoPayment } from '../lib/mercadopago'
 import { applyPaymentDataToOrder, createOrder } from '../lib/orders'
-import { fetchSiteSettings } from '../lib/settings'
+import { useSite } from '../lib/site-context'
 import { isSupabaseConfigured } from '../lib/supabase'
 import type { PaymentMethod } from '../types/raffle'
-import type { SiteSettings } from '../types/settings'
-import { defaultSiteSettings } from '../types/settings'
 
 type Step = 'numeros' | 'dados' | 'pagamento'
 
 export function ParticiparPage() {
   const navigate = useNavigate()
-  const [settings, setSettings] = useState<SiteSettings>(defaultSiteSettings)
-  const [numbers, setNumbers] = useState<Awaited<ReturnType<typeof fetchRaffleNumbers>>>([])
+  const { settings, numbers, refreshNumbers } = useSite()
   const [selected, setSelected] = useState<number[]>([])
   const [step, setStep] = useState<Step>('numeros')
-  const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
@@ -31,21 +25,6 @@ export function ParticiparPage() {
   const [email, setEmail] = useState('')
   const [telefone, setTelefone] = useState('')
   const [metodo, setMetodo] = useState<PaymentMethod>('pix')
-
-  useEffect(() => {
-    async function load() {
-      try {
-        const siteSettings = await fetchSiteSettings()
-        await syncNumbersWithSettings(siteSettings)
-        const raffleNumbers = await fetchRaffleNumbers(siteSettings)
-        setSettings(siteSettings)
-        setNumbers(raffleNumbers)
-      } finally {
-        setLoading(false)
-      }
-    }
-    void load()
-  }, [])
 
   async function handleCreateOrder(event: FormEvent) {
     event.preventDefault()
@@ -79,22 +58,18 @@ export function ParticiparPage() {
         }
       }
 
+      await refreshNumbers()
       navigate(`/pedido/${order.id}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Não foi possível criar o pedido.')
+      await refreshNumbers()
     } finally {
       setSubmitting(false)
     }
   }
 
-  if (loading) {
-    return <p className="loading-message container">Carregando números...</p>
-  }
-
   return (
     <main className="participar-page">
-      <DemoBanner pagamentoHabilitado={settings.pagamento_habilitado} />
-
       <div className="container checkout-shell">
         <Link className="back-link" to="/">
           <ArrowLeft size={16} /> Voltar ao início
