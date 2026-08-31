@@ -46,6 +46,7 @@ function PublicLayout() {
 
         <nav className="site-nav">
           <NavLink to="/">Início</NavLink>
+          <a href="/#premios">Prêmios</a>
           <NavLink to="/participar">Participar</NavLink>
           <a href="/#regulamento">Regulamento</a>
         </nav>

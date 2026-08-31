@@ -8,6 +8,12 @@ export type SiteSettings = {
   premio_nome: string
   premio_descricao: string
   premio_imagem_url: string | null
+  premio_2_nome: string
+  premio_2_descricao: string
+  premio_2_imagem_url: string | null
+  premio_3_nome: string
+  premio_3_descricao: string
+  premio_3_imagem_url: string | null
   regulamento: string
   data_sorteio: string | null
   total_numeros: number
@@ -30,6 +36,12 @@ export type SiteSettingsFormValues = {
   premio_nome: string
   premio_descricao: string
   premio_imagem_url: string
+  premio_2_nome: string
+  premio_2_descricao: string
+  premio_2_imagem_url: string
+  premio_3_nome: string
+  premio_3_descricao: string
+  premio_3_imagem_url: string
   regulamento: string
   data_sorteio: string
   total_numeros: number
@@ -53,9 +65,19 @@ export const defaultSiteSettings: SiteSettings = {
   assinatura_casal: 'Com amor, Matheus & Melissa ♡',
   premio_nome: 'Kit Panela Premium',
   premio_descricao:
-    'Um kit completo de panelas antiaderentes para começar a cozinhar nossos primeiros momentos juntos.',
+    'Conjunto completo de panelas antiaderentes — o coração da nossa cozinha.',
   premio_imagem_url:
     'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?auto=format&fit=crop&w=900&q=80',
+  premio_2_nome: 'Air Fryer',
+  premio_2_descricao:
+    'Fritadeira elétrica para receitas práticas e deliciosas no dia a dia.',
+  premio_2_imagem_url:
+    'https://images.unsplash.com/photo-1585659722983-3a675dabf23d?auto=format&fit=crop&w=900&q=80',
+  premio_3_nome: 'Jogo de Utensílios',
+  premio_3_descricao:
+    'Kit elegante de utensílios de cozinha para preparar com muito carinho.',
+  premio_3_imagem_url:
+    'https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=900&q=80',
   regulamento:
     '1. Cada número custa o valor informado no site.\n2. O sorteio será realizado na data indicada.\n3. O ganhador será contatado pelos dados informados no pedido.\n4. Números só são confirmados após a validação do pagamento.\n5. Reservas expiram automaticamente se o pagamento não for concluído no prazo.',
   data_sorteio: '2026-09-15',

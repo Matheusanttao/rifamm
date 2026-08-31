@@ -2,9 +2,10 @@ import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Eye, Save } from 'lucide-react'
 import type { SiteSettings, SiteSettingsFormValues } from '../types/settings'
+import { defaultSiteSettings } from '../types/settings'
 import { settingsToFormValues } from '../lib/settings'
 import { formatCurrency, formatDate } from '../lib/format'
-import { uploadImageToCloudinary } from '../lib/cloudinary'
+import { getPrizesFromSettings } from '../lib/prizes'
 
 type RaffleSettingsFormProps = {
   settings: SiteSettings
@@ -16,7 +17,6 @@ export function RaffleSettingsForm({ settings, onSubmit }: RaffleSettingsFormPro
   const [values, setValues] = useState<SiteSettingsFormValues>(initial)
   const [preview, setPreview] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [uploading, setUploading] = useState<'hero' | 'premio' | null>(null)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
@@ -26,19 +26,6 @@ export function RaffleSettingsForm({ settings, onSubmit }: RaffleSettingsFormPro
   ) {
     setValues((current) => ({ ...current, [field]: value }))
     setSuccess('')
-  }
-
-  async function handleImageUpload(field: 'hero_imagem_url' | 'premio_imagem_url', file: File) {
-    setUploading(field === 'hero_imagem_url' ? 'hero' : 'premio')
-    setError('')
-    try {
-      const result = await uploadImageToCloudinary(file)
-      setField(field, result.secure_url)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao enviar imagem.')
-    } finally {
-      setUploading(null)
-    }
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -61,7 +48,8 @@ export function RaffleSettingsForm({ settings, onSubmit }: RaffleSettingsFormPro
       <form className="product-form" onSubmit={handleSubmit}>
         <div className="settings-toolbar">
           <p className="muted">
-            Configure textos, prêmio, regulamento e parâmetros da rifa. Use a prévia antes de salvar.
+            Configure textos, prêmios, regulamento e parâmetros da rifa. Use links de imagem (URL)
+            para as fotos. Use a prévia antes de salvar.
           </p>
           <button type="button" className="button ghost" onClick={() => setPreview((v) => !v)}>
             <Eye size={16} /> {preview ? 'Ocultar prévia' : 'Prévia visual'}
@@ -94,55 +82,87 @@ export function RaffleSettingsForm({ settings, onSubmit }: RaffleSettingsFormPro
             <input
               value={values.hero_imagem_url}
               onChange={(e) => setField('hero_imagem_url', e.target.value)}
+              placeholder="https://..."
             />
-          </label>
-          <label>
-            Enviar imagem do hero
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => {
-                const file = e.target.files?.[0]
-                if (file) void handleImageUpload('hero_imagem_url', file)
-              }}
-            />
-            {uploading === 'hero' ? <span className="muted">Enviando...</span> : null}
           </label>
         </fieldset>
 
         <fieldset>
-          <legend>Prêmio e sorteio</legend>
+          <legend>Prêmios do sorteio</legend>
+          <p className="muted">Configure os prêmios do 1º, 2º e 3º lugar exibidos na página inicial.</p>
+
+          <h4 className="fieldset-subtitle">1º lugar</h4>
           <label>
             Nome do prêmio
             <input value={values.premio_nome} onChange={(e) => setField('premio_nome', e.target.value)} />
           </label>
           <label>
-            Descrição do prêmio
+            Descrição
             <textarea
-              rows={3}
+              rows={2}
               value={values.premio_descricao}
               onChange={(e) => setField('premio_descricao', e.target.value)}
             />
           </label>
           <label>
-            URL da imagem do prêmio
+            URL da imagem
             <input
               value={values.premio_imagem_url}
               onChange={(e) => setField('premio_imagem_url', e.target.value)}
+              placeholder="https://..."
+            />
+          </label>
+
+          <h4 className="fieldset-subtitle">2º lugar</h4>
+          <label>
+            Nome do prêmio
+            <input
+              value={values.premio_2_nome}
+              onChange={(e) => setField('premio_2_nome', e.target.value)}
             />
           </label>
           <label>
-            Enviar imagem do prêmio
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => {
-                const file = e.target.files?.[0]
-                if (file) void handleImageUpload('premio_imagem_url', file)
-              }}
+            Descrição
+            <textarea
+              rows={2}
+              value={values.premio_2_descricao}
+              onChange={(e) => setField('premio_2_descricao', e.target.value)}
             />
-            {uploading === 'premio' ? <span className="muted">Enviando...</span> : null}
           </label>
+          <label>
+            URL da imagem
+            <input
+              value={values.premio_2_imagem_url}
+              onChange={(e) => setField('premio_2_imagem_url', e.target.value)}
+              placeholder="https://..."
+            />
+          </label>
+
+          <h4 className="fieldset-subtitle">3º lugar</h4>
+          <label>
+            Nome do prêmio
+            <input
+              value={values.premio_3_nome}
+              onChange={(e) => setField('premio_3_nome', e.target.value)}
+            />
+          </label>
+          <label>
+            Descrição
+            <textarea
+              rows={2}
+              value={values.premio_3_descricao}
+              onChange={(e) => setField('premio_3_descricao', e.target.value)}
+            />
+          </label>
+          <label>
+            URL da imagem
+            <input
+              value={values.premio_3_imagem_url}
+              onChange={(e) => setField('premio_3_imagem_url', e.target.value)}
+              placeholder="https://..."
+            />
+          </label>
+
           <label>
             Data do sorteio
             <input
@@ -277,17 +297,27 @@ export function RaffleSettingsForm({ settings, onSubmit }: RaffleSettingsFormPro
           ) : null}
           <p>{values.texto_hero}</p>
           <div className="preview-prize">
-            {values.premio_imagem_url ? (
-              <img src={values.premio_imagem_url} alt={values.premio_nome} />
-            ) : null}
-            <div>
-              <h3>{values.premio_nome}</h3>
-              <p>{values.premio_descricao}</p>
-              <p>
-                <strong>{formatCurrency(values.valor_numero)}</strong> por número · Sorteio em{' '}
-                {formatDate(values.data_sorteio || null)}
-              </p>
-            </div>
+            {getPrizesFromSettings({
+              ...defaultSiteSettings,
+              ...values,
+              premio_imagem_url: values.premio_imagem_url || null,
+              premio_2_imagem_url: values.premio_2_imagem_url || null,
+              premio_3_imagem_url: values.premio_3_imagem_url || null,
+            } as SiteSettings).map((prize) => (
+              <div key={prize.place} className="preview-prize-item">
+                <img src={prize.imageUrl} alt={prize.name} />
+                <div>
+                  <strong>
+                    {prize.place}º lugar — {prize.name}
+                  </strong>
+                  <p>{prize.description}</p>
+                </div>
+              </div>
+            ))}
+            <p>
+              <strong>{formatCurrency(values.valor_numero)}</strong> por número · Sorteio em{' '}
+              {formatDate(values.data_sorteio || null)}
+            </p>
           </div>
         </aside>
       ) : null}

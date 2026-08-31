@@ -2,14 +2,15 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   ArrowRight,
   CalendarHeart,
-  Gift,
   Hash,
   Heart,
   Sparkles,
   Ticket,
+  UtensilsCrossed,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { DemoBanner } from '../components/DemoBanner'
+import { PrizeShowcase } from '../components/PrizeShowcase'
 import { fetchRaffleNumbers, getNumberStats, syncNumbersWithSettings } from '../lib/numbers'
 import { fetchSiteSettings } from '../lib/settings'
 import { formatCurrency, formatDate } from '../lib/format'
@@ -43,30 +44,40 @@ export function Home() {
   const regulamentoLines = settings.regulamento.split('\n').filter(Boolean)
 
   return (
-    <main>
+    <main className="home-page">
       <DemoBanner pagamentoHabilitado={settings.pagamento_habilitado} />
 
-      <section className="hero">
-        <div className="container hero-inner">
-          <div>
-            <p className="eyebrow">{settings.subtitulo_site}</p>
-            <h1 className="hero-title">
-              {settings.titulo_site} <span className="heart">♡</span>
+      {/* Hero — Chá de Panela */}
+      <section className="cha-hero">
+        <div className="cha-hero-bg" aria-hidden="true" />
+        <div className="container cha-hero-inner">
+          <div className="cha-hero-content">
+            <p className="cha-hero-tag">
+              <UtensilsCrossed size={15} />
+              Chá de Panela
+            </p>
+            <p className="cha-hero-script">{settings.subtitulo_site}</p>
+            <h1 className="cha-hero-title">
+              {settings.titulo_site}
+              <span className="heart"> ♡</span>
             </h1>
             <div className="divider left" />
-            <p className="hero-text">{settings.texto_hero}</p>
-            <div className="hero-actions">
-              <Link className="button primary large" to="/participar">
-                <Ticket size={18} /> Escolher meus números
-              </Link>
-              <a className="button ghost large" href="#premio">
-                <Gift size={18} /> Ver prêmio
-              </a>
+            <p className="cha-hero-text">{settings.texto_hero}</p>
+
+            <div className="cha-hero-meta">
+              <span>
+                <CalendarHeart size={16} />
+                Sorteio em <strong>{formatDate(settings.data_sorteio)}</strong>
+              </span>
+              <span>
+                <Ticket size={16} />
+                <strong>{formatCurrency(settings.valor_numero)}</strong> por número
+              </span>
             </div>
           </div>
 
-          <div className="hero-media">
-            <div className="hero-media-frame">
+          <div className="cha-hero-visual">
+            <div className="cha-hero-frame">
               <img
                 src={settings.hero_imagem_url || defaultSiteSettings.hero_imagem_url!}
                 alt="Chá de panela Matheus e Melissa"
@@ -76,6 +87,7 @@ export function Home() {
         </div>
       </section>
 
+      {/* Stats */}
       <div className="container stats-wrap">
         <div className="stats-grid">
           <article className="stat-card">
@@ -83,26 +95,26 @@ export function Home() {
               <Hash size={24} />
             </span>
             <div>
-              <div className="stat-value">{loading ? '—' : stats.total}</div>
-              <div className="stat-label">Números totais</div>
-            </div>
-          </article>
-          <article className="stat-card">
-            <span className="stat-icon green">
-              <Sparkles size={24} />
-            </span>
-            <div>
               <div className="stat-value">{loading ? '—' : stats.disponivel}</div>
-              <div className="stat-label">Disponíveis</div>
+              <div className="stat-label">Números disponíveis</div>
             </div>
           </article>
           <article className="stat-card">
             <span className="stat-icon gold">
-              <CalendarHeart size={24} />
+              <Sparkles size={24} />
+            </span>
+            <div>
+              <div className="stat-value">{loading ? '—' : stats.total}</div>
+              <div className="stat-label">Total da rifa</div>
+            </div>
+          </article>
+          <article className="stat-card">
+            <span className="stat-icon green">
+              <Ticket size={24} />
             </span>
             <div>
               <div className="stat-value">{formatCurrency(settings.valor_numero)}</div>
-              <div className="stat-label">Por número</div>
+              <div className="stat-label">Valor por número</div>
             </div>
           </article>
           <article className="stat-card">
@@ -110,40 +122,46 @@ export function Home() {
               <Heart size={24} fill="currentColor" />
             </span>
             <div>
-              <div className="stat-value">{formatDate(settings.data_sorteio)}</div>
+              <div className="stat-value cha-stat-date">{formatDate(settings.data_sorteio)}</div>
               <div className="stat-label">Data do sorteio</div>
             </div>
           </article>
         </div>
       </div>
 
-      <section className="container section" id="premio">
-        <div className="prize-section">
+      {/* Prêmios 1º, 2º e 3º */}
+      <section className="container section" id="premios">
+        <div className="cha-prizes-section">
           <div className="section-title">
-            <h2>Prêmio da rifa</h2>
+            <p className="eyebrow">Premiação</p>
+            <h2>Prêmios do sorteio</h2>
             <div className="divider" />
+            <p className="section-subtitle">
+              Três ganhadores levarão para casa presentes especiais para o nosso lar. Escolha seus
+              números e boa sorte!
+            </p>
           </div>
-          <div className="prize-card">
-            <div className="prize-image">
-              <img
-                src={settings.premio_imagem_url || defaultSiteSettings.premio_imagem_url!}
-                alt={settings.premio_nome}
-              />
-            </div>
-            <div>
-              <h3>{settings.premio_nome}</h3>
-              <p>{settings.premio_descricao}</p>
-              <p className="prize-price">
-                Participe por apenas <strong>{formatCurrency(settings.valor_numero)}</strong> por número
+
+          <PrizeShowcase settings={settings} />
+
+          <div className="cha-participate-cta">
+            <div className="cha-participate-copy">
+              <h3>Pronto para participar?</h3>
+              <p>
+                Escolha seus números na grade, confirme seus dados e finalize o pagamento. Cada
+                número é uma chance de ganhar.
               </p>
-              <Link className="button primary" to="/participar">
-                Participar agora <ArrowRight size={16} />
-              </Link>
             </div>
+            <Link className="button primary large cha-cta-button" to="/participar">
+              <Ticket size={20} />
+              Participar da rifa
+              <ArrowRight size={18} />
+            </Link>
           </div>
         </div>
       </section>
 
+      {/* Regulamento */}
       <section className="container section" id="regulamento">
         <div className="rules-section">
           <div className="section-title">
@@ -158,6 +176,7 @@ export function Home() {
         </div>
       </section>
 
+      {/* Como funciona */}
       <section className="container section" id="como-funciona">
         <div className="how-section">
           <div className="section-title">
@@ -193,6 +212,7 @@ export function Home() {
         </div>
       </section>
 
+      {/* Casal */}
       <section className="container section">
         <div className="couple-banner">
           <div className="couple-left">
@@ -209,8 +229,11 @@ export function Home() {
             </span>
             <p>
               Cada número é um gesto de carinho que nos aproxima desse momento especial. Obrigado
-              por fazer parte!
+              por fazer parte do nosso chá de panela!
             </p>
+            <Link className="button ghost" to="/participar">
+              Quero participar <ArrowRight size={16} />
+            </Link>
           </div>
         </div>
       </section>
