@@ -124,6 +124,30 @@ export async function fetchOrders(): Promise<Order[]> {
   return data || []
 }
 
+export async function searchOrders(codigo: string, email: string): Promise<Order[]> {
+  const code = codigo.trim().toUpperCase()
+  const mail = email.trim().toLowerCase()
+  if (!code || !mail) return []
+
+  if (!isSupabaseConfigured) {
+    const orders = await fetchOrders()
+    return orders.filter(
+      (order) =>
+        order.codigo.toUpperCase() === code && order.participante_email.toLowerCase() === mail,
+    )
+  }
+
+  const { data, error } = await supabase
+    .from('pedidos')
+    .select('*')
+    .eq('codigo', code)
+    .ilike('participante_email', mail)
+    .order('created_at', { ascending: false })
+
+  if (error) throw new Error(error.message)
+  return data || []
+}
+
 async function refreshLocalOrderStatus(order: Order): Promise<Order> {
   if (order.status_pagamento !== 'aguardando' || !order.reservado_ate) return order
 

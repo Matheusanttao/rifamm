@@ -7,6 +7,7 @@ import {
   FileText,
   Gift,
   LayoutGrid,
+  Search,
   Tag,
   UserRoundSearch,
   Users,
@@ -230,6 +231,20 @@ export function Home() {
             ))}
           </ul>
         </details>
+      </section>
+
+      <section className="container home-block home-anim" style={{ '--d': '920ms' } as CSSProperties} id="buscar">
+        <div className="home-lookup">
+          <div>
+            <p className="home-section-id">04 / consulta</p>
+            <h2>Já participou?</h2>
+            <p>Busque seu pedido pelo código e e-mail e baixe o comprovante em PDF.</p>
+          </div>
+          <Link className="button primary" to="/buscar">
+            <Search size={16} aria-hidden="true" />
+            Buscar pedido
+          </Link>
+        </div>
       </section>
     </main>
   )

@@ -1,10 +1,11 @@
-import { Heart, Ticket } from 'lucide-react'
+import { Heart, Search, Ticket } from 'lucide-react'
 import { Link, NavLink, Outlet, Route, Routes } from 'react-router-dom'
 import { AdminLayout } from './layouts/AdminLayout'
 import { AdminDashboard } from './pages/AdminDashboard'
 import { AdminLogin } from './pages/AdminLogin'
 import { AdminOrders } from './pages/AdminOrders'
 import { AdminSettings } from './pages/AdminSettings'
+import { BuscarPedidoPage } from './pages/BuscarPedidoPage'
 import { Home } from './pages/Home'
 import { OrderPage } from './pages/OrderPage'
 import { ParticiparPage } from './pages/ParticiparPage'
@@ -26,12 +27,18 @@ function PublicLayout() {
           <NavLink to="/">Início</NavLink>
           <a href="/#premios">Prêmios</a>
           <NavLink to="/participar">Participar</NavLink>
+          <NavLink to="/buscar">Buscar pedido</NavLink>
           <a href="/#regulamento">Regulamento</a>
         </nav>
 
-        <Link className="button primary header-cta" to="/participar" aria-label="Escolher números">
-          <Ticket size={18} aria-hidden="true" /> <span>Escolher números</span>
-        </Link>
+        <div className="header-actions">
+          <Link className="button ghost header-search" to="/buscar" aria-label="Buscar pedido">
+            <Search size={18} aria-hidden="true" /> <span>Buscar</span>
+          </Link>
+          <Link className="button primary header-cta" to="/participar" aria-label="Escolher números">
+            <Ticket size={18} aria-hidden="true" /> <span>Escolher números</span>
+          </Link>
+        </div>
       </header>
 
       <Outlet />
@@ -56,6 +63,7 @@ function App() {
       <Route element={<PublicLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/participar" element={<ParticiparPage />} />
+        <Route path="/buscar" element={<BuscarPedidoPage />} />
         <Route path="/pedido/:id" element={<OrderPage />} />
       </Route>
       <Route path="/admin/login" element={<AdminLogin />} />
