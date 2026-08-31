@@ -180,6 +180,27 @@ export async function searchOrders(codigo: string, email: string): Promise<Order
   return data || []
 }
 
+export async function searchOrdersByCpf(cpf: string): Promise<Order[]> {
+  const normalized = normalizeCpf(cpf)
+  if (!isValidCpf(normalized)) return []
+
+  if (!isSupabaseConfigured) {
+    const orders = await fetchOrders()
+    return orders
+      .filter((order) => order.participante_cpf === normalized)
+      .sort((a, b) => b.created_at.localeCompare(a.created_at))
+  }
+
+  const { data, error } = await supabase
+    .from('pedidos')
+    .select('*')
+    .eq('participante_cpf', normalized)
+    .order('created_at', { ascending: false })
+
+  if (error) throw new Error(error.message)
+  return data || []
+}
+
 async function refreshLocalOrderStatus(order: Order): Promise<Order> {
   return order
 }
