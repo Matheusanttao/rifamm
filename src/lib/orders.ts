@@ -1,5 +1,6 @@
 import type { CreateOrderInput, Order, PaymentMethod } from '../types/raffle'
 import type { SiteSettings } from '../types/settings'
+import { isValidCpf, normalizeCpf } from './cpf'
 import { generateOrderCode } from './format'
 import { reserveNumbersLocally } from './numbers'
 import { isSupabaseConfigured, supabase } from './supabase'
@@ -41,6 +42,11 @@ export async function createOrder(
     throw new Error('Informe o telefone / WhatsApp.')
   }
 
+  const cpf = normalizeCpf(input.participante_cpf)
+  if (!isValidCpf(cpf)) {
+    throw new Error('Informe um CPF válido.')
+  }
+
   const valorTotal = input.numeros.length * settings.valor_numero
   const now = new Date().toISOString()
 
@@ -52,6 +58,7 @@ export async function createOrder(
       participante_nome: input.participante_nome.trim(),
       participante_email: input.participante_email.trim(),
       participante_telefone: telefone,
+      participante_cpf: cpf,
       numeros: [...input.numeros].sort((a, b) => a - b),
       valor_total: valorTotal,
       status_pagamento: 'aguardando',
@@ -83,6 +90,7 @@ export async function createOrder(
       participante_nome: input.participante_nome.trim(),
       participante_email: input.participante_email.trim(),
       participante_telefone: telefone,
+      participante_cpf: cpf,
       numeros: input.numeros,
       valor_total: valorTotal,
       status_pagamento: 'aguardando',

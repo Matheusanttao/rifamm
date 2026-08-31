@@ -42,6 +42,7 @@ export type CreateOrderInput = {
   participante_nome: string
   participante_email: string
   participante_telefone: string
+  participante_cpf: string
   numeros: number[]
   metodo_pagamento: PaymentMethod
 }

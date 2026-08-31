@@ -8,6 +8,7 @@ import {
   formatNumbersList,
   paymentStatusLabel,
 } from './format'
+import { formatCpf } from './cpf'
 import { paymentMethodLabel } from './orders'
 
 const COLORS = {
@@ -75,6 +76,7 @@ export function downloadOrderPdf(order: Order, settings: SiteSettings) {
   const rows: Array<[string, string]> = [
     ['Participante', order.participante_nome],
     ['E-mail', order.participante_email],
+    ['CPF', order.participante_cpf ? formatCpf(order.participante_cpf) : '—'],
     ['Telefone', order.participante_telefone || '—'],
     ['Método', paymentMethodLabel(order.metodo_pagamento)],
     ['Números', formatNumbersList(order.numeros)],

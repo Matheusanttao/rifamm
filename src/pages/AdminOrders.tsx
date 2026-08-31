@@ -3,6 +3,7 @@ import { fetchOrders } from '../lib/orders'
 import { fetchRaffleNumbers } from '../lib/numbers'
 import { fetchSiteSettings } from '../lib/settings'
 import { formatCurrency, formatDateTime, formatNumbersList } from '../lib/format'
+import { formatCpf } from '../lib/cpf'
 import { StatusBadge } from '../components/StatusBadge'
 import type { Order, RaffleNumber } from '../types/raffle'
 
@@ -66,6 +67,7 @@ export function AdminOrders() {
                     <td>
                       {order.participante_email}
                       {order.participante_telefone ? ` · ${order.participante_telefone}` : ''}
+                      {order.participante_cpf ? ` · CPF ${formatCpf(order.participante_cpf)}` : ''}
                     </td>
                     <td>{formatNumbersList(order.numeros)}</td>
                     <td>{formatCurrency(order.valor_total)}</td>

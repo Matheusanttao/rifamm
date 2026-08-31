@@ -24,7 +24,7 @@ export type Database = {
       }
       pedidos: {
         Row: Order
-        Insert: Partial<Order> & Pick<Order, 'participante_nome' | 'participante_email' | 'numeros' | 'valor_total'>
+        Insert: Partial<Order> & Pick<Order, 'participante_nome' | 'participante_email' | 'participante_cpf' | 'numeros' | 'valor_total'>
         Update: Partial<Omit<Order, 'id' | 'created_at'>>
         Relationships: []
       }

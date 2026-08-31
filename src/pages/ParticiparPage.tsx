@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { NumberGrid } from '../components/NumberGrid'
 import { OrderSummary } from '../components/OrderSummary'
 import { PaymentCard } from '../components/PaymentCard'
+import { formatCpf, isValidCpf, normalizeCpf } from '../lib/cpf'
 import { initMercadoPagoPayment } from '../lib/mercadopago'
 import { applyPaymentDataToOrder, createOrder } from '../lib/orders'
 import { useSite } from '../lib/site-context'
@@ -24,7 +25,19 @@ export function ParticiparPage() {
   const [nome, setNome] = useState('')
   const [email, setEmail] = useState('')
   const [telefone, setTelefone] = useState('')
+  const [cpf, setCpf] = useState('')
   const [metodo, setMetodo] = useState<PaymentMethod>('pix')
+
+  const cpfValido = isValidCpf(cpf)
+
+  function handleContinueToPayment() {
+    if (!cpfValido) {
+      setError('Informe um CPF válido.')
+      return
+    }
+    setError('')
+    setStep('pagamento')
+  }
 
   async function handleCreateOrder(event: FormEvent) {
     event.preventDefault()
@@ -42,6 +55,7 @@ export function ParticiparPage() {
           participante_nome: nome,
           participante_email: email,
           participante_telefone: telefone,
+          participante_cpf: cpf,
           numeros: selected,
           metodo_pagamento: metodo,
         },
@@ -100,7 +114,13 @@ export function ParticiparPage() {
             ) : null}
 
             {step === 'dados' ? (
-              <form className="stacked-form" onSubmit={(e) => { e.preventDefault(); setStep('pagamento') }}>
+              <form
+                className="stacked-form"
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  handleContinueToPayment()
+                }}
+              >
                 <label>
                   Nome completo
                   <input value={nome} onChange={(e) => setNome(e.target.value)} required />
@@ -109,6 +129,22 @@ export function ParticiparPage() {
                   E-mail
                   <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
                 </label>
+                <label>
+                  CPF
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    value={cpf}
+                    onChange={(e) => setCpf(formatCpf(e.target.value))}
+                    placeholder="000.000.000-00"
+                    maxLength={14}
+                    required
+                  />
+                </label>
+                {!cpfValido && normalizeCpf(cpf).length === 11 ? (
+                  <p className="form-error">CPF inválido. Confira os números digitados.</p>
+                ) : null}
                 <label>
                   Telefone / WhatsApp
                   <input
@@ -119,7 +155,8 @@ export function ParticiparPage() {
                     required
                   />
                 </label>
-                <button className="button primary" type="submit">
+                {error ? <p className="form-error">{error}</p> : null}
+                <button className="button primary" type="submit" disabled={!cpfValido}>
                   Continuar <ArrowRight size={16} />
                 </button>
               </form>
@@ -203,8 +240,8 @@ export function ParticiparPage() {
                 <button
                   type="button"
                   className="button primary full"
-                  disabled={!nome.trim() || !email.trim()}
-                  onClick={() => setStep('pagamento')}
+                  disabled={!nome.trim() || !email.trim() || !telefone.trim() || !cpfValido}
+                  onClick={handleContinueToPayment}
                 >
                   Ir para pagamento <ArrowRight size={16} />
                 </button>
