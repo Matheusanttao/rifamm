@@ -13,19 +13,25 @@ type NumberGridProps = {
 
 type Filter = 'todos' | 'disponivel' | 'vendido'
 
+function isUnavailable(status: RaffleNumber['status']) {
+  return status === 'vendido' || status === 'reservado'
+}
+
 export function NumberGrid({ numbers, selected, onChange, valorNumero, disabled }: NumberGridProps) {
   const [search, setSearch] = useState('')
-  const [filter, setFilter] = useState<Filter>('disponivel')
+  const [filter, setFilter] = useState<Filter>('todos')
   const [autoQty, setAutoQty] = useState(5)
 
   const filtered = useMemo(() => {
-    return numbers.filter((item) => {
-      // Reservados não aparecem no filtro público (ficam indisponíveis no fluxo)
-      if (item.status === 'reservado') return false
-      if (filter !== 'todos' && item.status !== filter) return false
-      if (!search.trim()) return true
-      return String(item.numero).includes(search.trim())
-    })
+    const query = search.trim()
+    return numbers
+      .filter((item) => {
+        if (filter === 'disponivel') return item.status === 'disponivel'
+        if (filter === 'vendido') return isUnavailable(item.status)
+        return true
+      })
+      .filter((item) => (query ? String(item.numero).includes(query) : true))
+      .sort((a, b) => a.numero - b.numero)
   }, [numbers, filter, search])
 
   const total = selected.length * valorNumero
@@ -61,14 +67,20 @@ export function NumberGrid({ numbers, selected, onChange, valorNumero, disabled 
     <div className="number-grid-panel">
       <div className="number-grid-toolbar">
         <div className="number-grid-filters">
-          {(['disponivel', 'vendido', 'todos'] as Filter[]).map((item) => (
+          {(
+            [
+              ['todos', 'Todos'],
+              ['disponivel', 'Disponível'],
+              ['vendido', 'Vendido'],
+            ] as const
+          ).map(([value, label]) => (
             <button
-              key={item}
+              key={value}
               type="button"
-              className={`filter-pill ${filter === item ? 'active' : ''}`}
-              onClick={() => setFilter(item)}
+              className={`filter-pill ${filter === value ? 'active' : ''}`}
+              onClick={() => setFilter(value)}
             >
-              {item === 'todos' ? 'Todos' : item.charAt(0).toUpperCase() + item.slice(1)}
+              {label}
             </button>
           ))}
         </div>
@@ -89,7 +101,7 @@ export function NumberGrid({ numbers, selected, onChange, valorNumero, disabled 
           <input
             type="number"
             min={1}
-            max={numbers.filter((n) => n.status === 'disponivel').length}
+            max={Math.max(1, numbers.filter((n) => n.status === 'disponivel').length)}
             value={autoQty}
             onChange={(e) => setAutoQty(Math.max(1, Number(e.target.value) || 1))}
           />
@@ -102,14 +114,19 @@ export function NumberGrid({ numbers, selected, onChange, valorNumero, disabled 
       <div className="number-grid">
         {filtered.map((item) => {
           const isSelected = selected.includes(item.numero)
+          const unavailable = isUnavailable(item.status)
           return (
             <button
               key={item.numero}
               type="button"
-              className={`number-cell status-${item.status} ${isSelected ? 'is-selected' : ''}`}
+              className={`number-cell status-${unavailable ? 'vendido' : item.status} ${isSelected ? 'is-selected' : ''}`}
               onClick={() => toggleNumber(item.numero)}
-              disabled={disabled || item.status !== 'disponivel'}
-              title={`Número ${item.numero}`}
+              disabled={disabled || unavailable}
+              title={
+                unavailable
+                  ? `Número ${String(item.numero).padStart(3, '0')} — indisponível`
+                  : `Número ${String(item.numero).padStart(3, '0')}`
+              }
             >
               {String(item.numero).padStart(3, '0')}
             </button>
