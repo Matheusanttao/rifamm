@@ -200,21 +200,9 @@ export async function applyPaymentDataToOrder(
     return orders[index]
   }
 
-  const { data, error } = await supabase
-    .from('pedidos')
-    .update({
-      pix_copia_cola: payment.pix_copia_cola,
-      pix_qr_base64: payment.pix_qr_base64,
-      checkout_url: payment.checkout_url,
-      provider_payment_id: payment.provider_payment_id,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', orderId)
-    .select('*')
-    .single()
-
-  if (error) throw new Error(error.message)
-  return data
+  // O PIX/checkout já é gravado pela API (/api/mercadopago/create-payment) com service role.
+  // Anon não tem policy de UPDATE em pedidos — buscar evita "Cannot coerce to single JSON object".
+  return fetchOrder(orderId)
 }
 
 export function paymentMethodLabel(method: PaymentMethod | null) {

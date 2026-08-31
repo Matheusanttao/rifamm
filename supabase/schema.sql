@@ -69,6 +69,7 @@ create table if not exists public.pedidos (
   participante_nome text not null,
   participante_email text not null,
   participante_telefone text,
+  participante_cpf text,
   numeros int[] not null,
   valor_total numeric(12, 2) not null,
   status_pagamento text not null default 'aguardando'
