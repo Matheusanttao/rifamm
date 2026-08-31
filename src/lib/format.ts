@@ -5,11 +5,16 @@ export function formatCurrency(value: number | null) {
 
 export function formatDate(value: string | null) {
   if (!value) return '—'
+  // Datas "YYYY-MM-DD" do Postgres devem ser locais; `new Date('YYYY-MM-DD')` vira UTC e atrasa 1 dia no Brasil.
+  const dateOnly = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.slice(0, 10))
+  const date = dateOnly
+    ? new Date(Number(dateOnly[1]), Number(dateOnly[2]) - 1, Number(dateOnly[3]))
+    : new Date(value)
   return new Intl.DateTimeFormat('pt-BR', {
     day: '2-digit',
     month: 'long',
     year: 'numeric',
-  }).format(new Date(value))
+  }).format(date)
 }
 
 export function formatDateTime(value: string | null) {

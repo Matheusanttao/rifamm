@@ -267,3 +267,5 @@ end;
 $$;
 
 select public.inicializar_numeros_rifa();
+
+grant execute on function public.inicializar_numeros_rifa() to anon, authenticated;

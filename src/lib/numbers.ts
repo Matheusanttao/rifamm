@@ -140,7 +140,12 @@ export async function releaseNumbersLocally(numeros: number[], settings: SiteSet
 }
 
 export async function syncNumbersWithSettings(settings: SiteSettings): Promise<void> {
-  if (isSupabaseConfigured) return
+  if (isSupabaseConfigured) {
+    const { error } = await supabase.rpc('inicializar_numeros_rifa')
+    // Sem grant a função falha; não bloqueia a home — só deixa a grade antiga.
+    if (error) console.warn('Não foi possível sincronizar números:', error.message)
+    return
+  }
 
   const current = readLocalNumbers(settings.total_numeros)
   if (current.length === settings.total_numeros) return

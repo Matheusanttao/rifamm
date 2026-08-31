@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { RaffleSettingsForm } from '../components/RaffleSettingsForm'
+import { syncNumbersWithSettings } from '../lib/numbers'
 import { fetchSiteSettings, saveSiteSettings } from '../lib/settings'
 import type { SiteSettings } from '../types/settings'
 import { defaultSiteSettings } from '../types/settings'
@@ -31,6 +32,7 @@ export function AdminSettings() {
         settings={settings}
         onSubmit={async (values) => {
           const saved = await saveSiteSettings(values)
+          await syncNumbersWithSettings(saved)
           setSettings(saved)
         }}
       />

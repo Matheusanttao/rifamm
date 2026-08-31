@@ -43,6 +43,10 @@ export type Database = {
         Args: Record<string, never>
         Returns: number
       }
+      inicializar_numeros_rifa: {
+        Args: Record<string, never>
+        Returns: undefined
+      }
     }
     Enums: Record<string, never>
     CompositeTypes: Record<string, never>
