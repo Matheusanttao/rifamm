@@ -1368,8 +1368,8 @@ textarea:focus {
 
 .admin-table-wrap {
   overflow: auto;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border: 1px solid #e7d5c4;
+  border-radius: 10px;
   background: var(--surface-strong);
   box-shadow: var(--shadow-sm);
 }
@@ -1382,16 +1382,60 @@ textarea:focus {
 
 .admin-table th,
 .admin-table td {
-  padding: 1rem;
-  border-bottom: 1px solid var(--border);
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid #efe4d8;
   text-align: left;
+  vertical-align: middle;
 }
 
-.admin-table th {
-  color: var(--muted);
-  font-size: 0.78rem;
-  letter-spacing: 0.1em;
+.admin-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f7f1ea;
+  color: #c16c2e;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
+  white-space: nowrap;
+  border-top: 1px solid #e0c7b0;
+  border-bottom: 1px solid #e0c7b0;
+  border-right: 1px solid #e0c7b0;
+}
+
+.admin-table thead th:last-child {
+  border-right: 0;
+}
+
+.admin-table thead th::after {
+  content: "⇅";
+  display: inline-block;
+  margin-left: 0.4rem;
+  color: #d9a978;
+  font-size: 0.7rem;
+  font-weight: 500;
+  vertical-align: middle;
+}
+
+.admin-table tbody tr {
+  transition: background 0.15s ease;
+}
+
+.admin-table tbody tr:hover {
+  background: #fff7f0;
+}
+
+.admin-table tbody tr:focus-within,
+.admin-table tbody tr.is-selected {
+  background: #fff1e6;
+  box-shadow: inset 3px 0 0 #e67e22, inset -3px 0 0 #e67e22;
+}
+
+.admin-table tbody td {
+  color: #4a4038;
+  font-size: 0.92rem;
+  font-weight: 500;
 }
 
 .table-product {
