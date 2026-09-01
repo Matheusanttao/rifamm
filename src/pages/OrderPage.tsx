@@ -52,6 +52,7 @@ export function OrderPage() {
       if (
         withSync &&
         pedido?.status_pagamento === 'aguardando' &&
+        pedido.provider_payment_id &&
         settings.pagamento_habilitado &&
         isSupabaseConfigured
       ) {

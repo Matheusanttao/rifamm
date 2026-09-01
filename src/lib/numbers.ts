@@ -76,14 +76,19 @@ export async function releaseExpiredReservations(): Promise<void> {
   if (error) console.warn('liberar_reservas_expiradas:', error.message)
 }
 
-export async function fetchRaffleNumbers(settings: SiteSettings): Promise<RaffleNumber[]> {
+export async function fetchRaffleNumbers(
+  settings: SiteSettings,
+  options?: { skipRelease?: boolean },
+): Promise<RaffleNumber[]> {
   if (!isSupabaseConfigured) {
     const released = releaseExpiredLocalNumbers(readLocalNumbers(settings.total_numeros))
     writeLocalNumbers(released)
     return released
   }
 
-  await releaseExpiredReservations()
+  if (!options?.skipRelease) {
+    await releaseExpiredReservations()
+  }
 
   const { data, error } = await supabase
     .from('rifa_numeros')

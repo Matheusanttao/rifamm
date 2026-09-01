@@ -46,7 +46,9 @@ export function ParticiparPage() {
     void fetch('/api/orders/release-expired')
       .then(() => refreshNumbers())
       .catch(() => undefined)
-  }, [refreshNumbers, settings.pagamento_habilitado])
+    // Libera reservas expiradas uma vez ao abrir a página.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settings.pagamento_habilitado])
 
   function handleContinueToPayment() {
     if (!nomeValido) {

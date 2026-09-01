@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from 'react'
 import { Heart } from 'lucide-react'
-import { fetchRaffleNumbers, syncNumbersWithSettings } from './numbers'
+import { fetchRaffleNumbers, releaseExpiredReservations, syncNumbersWithSettings } from './numbers'
 import { fetchSiteSettings } from './settings'
 import type { RaffleNumber } from '../types/raffle'
 import type { SiteSettings } from '../types/settings'
@@ -58,8 +58,8 @@ export function SiteProvider({ children }: { children: ReactNode }) {
 
   const refreshNumbers = useCallback(async (nextSettings?: SiteSettings) => {
     const current = nextSettings ?? settingsRef.current
-    await syncNumbersWithSettings(current)
-    const raffleNumbers = await fetchRaffleNumbers(current)
+    await releaseExpiredReservations()
+    const raffleNumbers = await fetchRaffleNumbers(current, { skipRelease: true })
     setNumbers(raffleNumbers)
   }, [])
 
@@ -77,7 +77,7 @@ export function SiteProvider({ children }: { children: ReactNode }) {
           preloadImage(resolveHeroUrl(siteSettings)),
           (async () => {
             await syncNumbersWithSettings(siteSettings)
-            const raffleNumbers = await fetchRaffleNumbers(siteSettings)
+            const raffleNumbers = await fetchRaffleNumbers(siteSettings, { skipRelease: true })
             if (!cancelled) setNumbers(raffleNumbers)
           })(),
         ])
@@ -110,9 +110,7 @@ export function SiteProvider({ children }: { children: ReactNode }) {
       settings,
       numbers,
       ready,
-      refreshNumbers: async () => {
-        await refreshNumbers()
-      },
+      refreshNumbers,
     }),
     [settings, numbers, ready, refreshNumbers],
   )

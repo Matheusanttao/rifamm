@@ -23,7 +23,11 @@ export default async function handler(req, res) {
     }
 
     if (!order.provider_payment_id) {
-      return res.status(400).json({ error: 'Pedido sem pagamento no Mercado Pago.' })
+      return res.status(200).json({
+        ok: true,
+        status: order.status_pagamento,
+        skipped: true,
+      })
     }
 
     const payment = await fetchMercadoPagoPayment(order.provider_payment_id)
