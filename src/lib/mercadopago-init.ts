@@ -12,6 +12,15 @@ export function isProductionMercadoPagoKey() {
   return publicKey?.startsWith('APP_USR') ?? false
 }
 
+export function shouldBlockMercadoPagoBrick() {
+  if (!publicKey) return true
+
+  const host = typeof window !== 'undefined' ? window.location.hostname : ''
+  const isLocalhost = host === 'localhost' || host === '127.0.0.1'
+
+  return isProductionMercadoPagoKey() && isLocalhost
+}
+
 export function getMercadoPagoSetupHint() {
   if (!publicKey) {
     return 'Configure VITE_MERCADOPAGO_PUBLIC_KEY no .env.local e na Vercel.'

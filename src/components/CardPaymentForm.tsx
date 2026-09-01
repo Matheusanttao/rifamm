@@ -5,6 +5,7 @@ import {
   getMercadoPagoSetupHint,
   initMercadoPagoSdk,
   isMercadoPagoConfigured,
+  shouldBlockMercadoPagoBrick,
 } from '../lib/mercadopago-init'
 import { processCardPayment } from '../lib/mercadopago'
 import type { Order } from '../types/raffle'
@@ -38,7 +39,7 @@ export function CardPaymentForm({ order, onApproved, onError }: CardPaymentFormP
   const amountValid = Number.isFinite(amount) && amount > 0
 
   useEffect(() => {
-    if (!isMercadoPagoConfigured() || !amountValid) return
+    if (!isMercadoPagoConfigured() || !amountValid || shouldBlockMercadoPagoBrick()) return
 
     let cancelled = false
 
@@ -150,6 +151,7 @@ export function CardPaymentForm({ order, onApproved, onError }: CardPaymentFormP
   }
 
   const setupHint = getMercadoPagoSetupHint()
+  const blockedLocally = shouldBlockMercadoPagoBrick()
 
   return (
     <div className="payment-card-block">
@@ -168,21 +170,28 @@ export function CardPaymentForm({ order, onApproved, onError }: CardPaymentFormP
 
       {setupHint ? <p className="demo-payment-note">{setupHint}</p> : null}
 
-      <div className={`card-payment-brick${brickReady ? ' is-ready' : ''}`}>
-        {canMountBrick ? (
-          <CardPayment
-            id={BRICK_CONTAINER_ID}
-            locale="pt-BR"
-            initialization={initialization}
-            customization={customization}
-            onReady={handleReady}
-            onError={handleBrickError}
-            onSubmit={handleSubmit}
-          />
-        ) : (
-          <p className="muted">Carregando formulário seguro...</p>
-        )}
-      </div>
+      {blockedLocally ? (
+        <p className="form-error">
+          Pagamento com cartão indisponível em localhost com chave de produção. Use credenciais
+          TEST- no .env.local ou teste no site publicado na Vercel.
+        </p>
+      ) : (
+        <div className={`card-payment-brick${brickReady ? ' is-ready' : ''}`}>
+          {canMountBrick ? (
+            <CardPayment
+              id={BRICK_CONTAINER_ID}
+              locale="pt-BR"
+              initialization={initialization}
+              customization={customization}
+              onReady={handleReady}
+              onError={handleBrickError}
+              onSubmit={handleSubmit}
+            />
+          ) : (
+            <p className="muted">Carregando formulário seguro...</p>
+          )}
+        </div>
+      )}
 
       {brickError ? <p className="form-error">{brickError}</p> : null}
       {processing ? <p className="muted">Processando pagamento...</p> : null}
