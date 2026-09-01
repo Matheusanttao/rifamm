@@ -76,11 +76,11 @@ export const defaultSiteSettings: SiteSettings = {
   premio_3_imagem_url:
     'https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=900&q=80',
   regulamento:
-    '1. Cada número custa o valor informado no site.\n2. O sorteio será realizado na data indicada.\n3. O ganhador será contatado pelos dados informados no pedido.\n4. Números só são confirmados após a validação do pagamento.\n5. Ao iniciar o pedido, os números ficam reservados até a conclusão ou o cancelamento do pagamento.',
+    '1. Cada número custa o valor informado no site.\n2. O sorteio será realizado na data indicada.\n3. O ganhador será contatado pelos dados informados no pedido.\n4. Números só são confirmados após a validação do pagamento.\n5. Ao iniciar o pedido, os números ficam reservados por 5 minutos. Sem pagamento nesse prazo, a reserva expira e os números voltam para a grade.',
   data_sorteio: '2026-09-15',
   total_numeros: 200,
   valor_numero: 15,
-  reserva_minutos: 15,
+  reserva_minutos: 5,
   hero_imagem_url: '/matheus-melissa.jpg',
   pagamento_habilitado: false,
   pix_chave: null,

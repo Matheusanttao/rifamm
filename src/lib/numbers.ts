@@ -40,6 +40,25 @@ function writeLocalNumbers(numbers: RaffleNumber[]) {
   localStorage.setItem(NUMBERS_KEY, JSON.stringify(numbers))
 }
 
+function releaseExpiredLocalNumbers(numbers: RaffleNumber[]): RaffleNumber[] {
+  const now = Date.now()
+  return numbers.map((item) => {
+    if (
+      item.status === 'reservado' &&
+      item.reservado_ate &&
+      new Date(item.reservado_ate).getTime() <= now
+    ) {
+      return { ...item, status: 'disponivel' as const, pedido_id: null, reservado_ate: null }
+    }
+    return item
+  })
+}
+
+function reservationExpiryIso(minutes: number) {
+  const mins = Math.max(minutes, 1)
+  return new Date(Date.now() + mins * 60 * 1000).toISOString()
+}
+
 export function getNumberStats(numbers: RaffleNumber[]): NumberStats {
   return numbers.reduce<NumberStats>(
     (acc, item) => {
@@ -51,10 +70,20 @@ export function getNumberStats(numbers: RaffleNumber[]): NumberStats {
   )
 }
 
+export async function releaseExpiredReservations(): Promise<void> {
+  if (!isSupabaseConfigured) return
+  const { error } = await supabase.rpc('liberar_reservas_expiradas')
+  if (error) console.warn('liberar_reservas_expiradas:', error.message)
+}
+
 export async function fetchRaffleNumbers(settings: SiteSettings): Promise<RaffleNumber[]> {
   if (!isSupabaseConfigured) {
-    return readLocalNumbers(settings.total_numeros)
+    const released = releaseExpiredLocalNumbers(readLocalNumbers(settings.total_numeros))
+    writeLocalNumbers(released)
+    return released
   }
+
+  await releaseExpiredReservations()
 
   const { data, error } = await supabase
     .from('rifa_numeros')
@@ -85,7 +114,7 @@ export async function reserveNumbersLocally(
   pedidoId: string,
   settings: SiteSettings,
 ): Promise<void> {
-  const all = await fetchRaffleNumbers(settings)
+  const all = releaseExpiredLocalNumbers(await fetchRaffleNumbers(settings))
 
   const unavailable = numeros.filter((numero) => {
     const item = all.find((n) => n.numero === numero)
@@ -96,9 +125,10 @@ export async function reserveNumbersLocally(
     throw new Error(`Os números ${unavailable.join(', ')} não estão mais disponíveis.`)
   }
 
+  const expiresAt = reservationExpiryIso(settings.reserva_minutos)
   const updated = all.map((item) =>
     numeros.includes(item.numero)
-      ? { ...item, status: 'reservado' as const, pedido_id: pedidoId, reservado_ate: null }
+      ? { ...item, status: 'reservado' as const, pedido_id: pedidoId, reservado_ate: expiresAt }
       : item,
   )
 
@@ -127,8 +157,8 @@ export async function releaseNumbersLocally(numeros: number[], settings: SiteSet
 
 export async function syncNumbersWithSettings(settings: SiteSettings): Promise<void> {
   if (isSupabaseConfigured) {
+    await releaseExpiredReservations()
     const { error } = await supabase.rpc('inicializar_numeros_rifa')
-    // Sem grant a função falha; não bloqueia a home — só deixa a grade antiga.
     if (error) console.warn('Não foi possível sincronizar números:', error.message)
     return
   }

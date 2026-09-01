@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import type { Order } from '../types/raffle'
 import { formatDateTime, formatNumbersList } from '../lib/format'
+import { useSite } from '../lib/site-context'
 import { StatusBadge } from './StatusBadge'
 
 type PaymentStatusPanelProps = {
@@ -42,8 +43,13 @@ const statusCopy: Record<Order['status_pagamento'], { title: string; text: strin
 }
 
 export function PaymentStatusPanel({ order }: PaymentStatusPanelProps) {
+  const { settings } = useSite()
   const copy = statusCopy[order.status_pagamento]
   const Icon = copy.icon
+  const aguardandoText =
+    order.status_pagamento === 'aguardando'
+      ? `Seus números estão reservados por ${settings.reserva_minutos} minutos. Conclua o pagamento nesse prazo para confirmar a participação.`
+      : copy.text
 
   return (
     <div className={`payment-status-panel status-${order.status_pagamento}`}>
@@ -54,7 +60,7 @@ export function PaymentStatusPanel({ order }: PaymentStatusPanelProps) {
         <div>
           <StatusBadge status={order.status_pagamento} variant="payment" inline />
           <h2>{copy.title}</h2>
-          <p>{copy.text}</p>
+          <p>{aguardandoText}</p>
         </div>
       </div>
 
@@ -71,6 +77,12 @@ export function PaymentStatusPanel({ order }: PaymentStatusPanelProps) {
           <div>
             <span>Pago em</span>
             <strong>{formatDateTime(order.pago_em)}</strong>
+          </div>
+        ) : null}
+        {order.status_pagamento === 'aguardando' && order.reservado_ate ? (
+          <div>
+            <span>Reserva até</span>
+            <strong>{formatDateTime(order.reservado_ate)}</strong>
           </div>
         ) : null}
       </div>

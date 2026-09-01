@@ -3,7 +3,7 @@ import { Check, Copy, CreditCard, QrCode } from 'lucide-react'
 import type { Order } from '../types/raffle'
 import type { SiteSettings } from '../types/settings'
 import { getPixQrUrl } from '../lib/orders'
-import { formatCurrency } from '../lib/format'
+import { formatCurrency, formatDateTime } from '../lib/format'
 
 type PaymentPixProps = {
   order: Order
@@ -93,6 +93,13 @@ export function PaymentPix({ order, settings, loading }: PaymentPixProps) {
       <p className="payment-amount">
         Valor: <strong>{formatCurrency(order.valor_total)}</strong>
       </p>
+
+      {order.reservado_ate ? (
+        <p className="muted payment-deadline">
+          Pague até <strong>{formatDateTime(order.reservado_ate)}</strong> ({settings.reserva_minutos}{' '}
+          min). Depois desse prazo os números voltam para a grade.
+        </p>
+      ) : null}
 
       <p className="payment-note">
         <CreditCard size={14} />

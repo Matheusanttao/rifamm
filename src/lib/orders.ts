@@ -43,6 +43,8 @@ export async function createOrder(
 
   const valorTotal = input.numeros.length * settings.valor_numero
   const now = new Date().toISOString()
+  const reservaMinutos = Math.max(settings.reserva_minutos || 5, 1)
+  const reservadoAte = new Date(Date.now() + reservaMinutos * 60 * 1000).toISOString()
 
   if (!isSupabaseConfigured) {
     const id = crypto.randomUUID()
@@ -57,7 +59,7 @@ export async function createOrder(
       status_pagamento: 'aguardando',
       metodo_pagamento: input.metodo_pagamento,
       ...emptyPaymentFields(),
-      reservado_ate: null,
+      reservado_ate: reservadoAte,
       pago_em: null,
       email_enviado: false,
       created_at: now,
@@ -97,7 +99,7 @@ export async function createOrder(
   const { data: reserveResult, error: reserveError } = await supabase.rpc('reservar_numeros', {
     p_pedido_id: inserted.id,
     p_numeros: input.numeros,
-    p_reserva_minutos: 0,
+    p_reserva_minutos: reservaMinutos,
   })
 
   if (reserveError) {

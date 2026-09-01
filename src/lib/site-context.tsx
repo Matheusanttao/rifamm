@@ -76,10 +76,16 @@ export function SiteProvider({ children }: { children: ReactNode }) {
     }
 
     void boot()
+
+    const interval = window.setInterval(() => {
+      void refreshNumbers()
+    }, 30000)
+
     return () => {
       cancelled = true
+      window.clearInterval(interval)
     }
-  }, [])
+  }, [refreshNumbers])
 
   const value = useMemo(
     () => ({
