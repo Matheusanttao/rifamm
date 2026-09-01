@@ -1,4 +1,13 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react'
 import { Heart } from 'lucide-react'
 import { fetchRaffleNumbers, syncNumbersWithSettings } from './numbers'
 import { fetchSiteSettings } from './settings'
@@ -43,13 +52,16 @@ export function SiteProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<SiteSettings>(defaultSiteSettings)
   const [numbers, setNumbers] = useState<RaffleNumber[]>([])
   const [ready, setReady] = useState(false)
+  const settingsRef = useRef(settings)
+
+  settingsRef.current = settings
 
   const refreshNumbers = useCallback(async (nextSettings?: SiteSettings) => {
-    const current = nextSettings || settings
+    const current = nextSettings ?? settingsRef.current
     await syncNumbersWithSettings(current)
     const raffleNumbers = await fetchRaffleNumbers(current)
     setNumbers(raffleNumbers)
-  }, [settings])
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -58,6 +70,7 @@ export function SiteProvider({ children }: { children: ReactNode }) {
       try {
         const siteSettings = await fetchSiteSettings()
         if (cancelled) return
+        settingsRef.current = siteSettings
         setSettings(siteSettings)
 
         await Promise.all([
@@ -77,15 +90,20 @@ export function SiteProvider({ children }: { children: ReactNode }) {
 
     void boot()
 
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!ready) return
+
     const interval = window.setInterval(() => {
       void refreshNumbers()
     }, 30000)
 
-    return () => {
-      cancelled = true
-      window.clearInterval(interval)
-    }
-  }, [refreshNumbers])
+    return () => window.clearInterval(interval)
+  }, [ready, refreshNumbers])
 
   const value = useMemo(
     () => ({
