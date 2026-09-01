@@ -88,6 +88,7 @@ create table if not exists public.pedidos (
 
 create index if not exists pedidos_status_idx on public.pedidos (status_pagamento);
 create index if not exists pedidos_created_idx on public.pedidos (created_at desc);
+create index if not exists pedidos_cpf_idx on public.pedidos (participante_cpf);
 
 drop trigger if exists pedidos_set_updated_at on public.pedidos;
 create trigger pedidos_set_updated_at

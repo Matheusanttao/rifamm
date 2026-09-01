@@ -92,3 +92,15 @@ begin
   return query select true, 'Números reservados com sucesso.';
 end;
 $$;
+
+-- Limpa pedidos antigos presos em aguardando (sem prazo ou prazo vencido)
+update public.pedidos
+set status_pagamento = 'expirado', updated_at = now()
+where status_pagamento = 'aguardando'
+  and (reservado_ate is null or reservado_ate < now())
+  and created_at < now() - interval '5 minutes';
+
+update public.rifa_numeros
+set status = 'disponivel', pedido_id = null, reservado_ate = null, updated_at = now()
+where status = 'reservado'
+  and pedido_id in (select id from public.pedidos where status_pagamento = 'expirado');

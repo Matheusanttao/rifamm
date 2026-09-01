@@ -7,13 +7,23 @@ import { formatCurrency, formatDateTime, formatNumbersList } from '../lib/format
 import { paymentMethodLabel, searchOrdersByCpf } from '../lib/orders'
 import type { Order } from '../types/raffle'
 
-function collectApprovedNumbers(orders: Order[]): number[] {
-  const numbers = new Set<number>()
+function collectNumbers(orders: Order[]) {
+  const confirmados = new Set<number>()
+  const aguardando = new Set<number>()
+
   for (const order of orders) {
-    if (order.status_pagamento !== 'aprovado') continue
-    for (const numero of order.numeros) numbers.add(numero)
+    if (order.status_pagamento === 'aprovado') {
+      for (const numero of order.numeros) confirmados.add(numero)
+    } else if (order.status_pagamento === 'aguardando') {
+      for (const numero of order.numeros) aguardando.add(numero)
+    }
   }
-  return [...numbers].sort((a, b) => a - b)
+
+  return {
+    confirmados: [...confirmados].sort((a, b) => a - b),
+    aguardando: [...aguardando].sort((a, b) => a - b),
+    todos: [...new Set([...confirmados, ...aguardando])].sort((a, b) => a - b),
+  }
 }
 
 export function MeusNumerosPage() {
@@ -32,7 +42,7 @@ export function MeusNumerosPage() {
     () => orders.filter((order) => order.status_pagamento === 'aguardando'),
     [orders],
   )
-  const numerosComprados = useMemo(() => collectApprovedNumbers(orders), [orders])
+  const numeros = useMemo(() => collectNumbers(orders), [orders])
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
@@ -66,7 +76,7 @@ export function MeusNumerosPage() {
           <p className="home-section-id">Consulta</p>
           <h1>Meus números</h1>
           <p className="muted">
-            Digite seu CPF para ver os números que você comprou na rifa.
+            Digite seu CPF para ver todos os números da sua participação na rifa.
           </p>
 
           <form className="stacked-form buscar-form" onSubmit={handleSubmit}>
@@ -89,47 +99,63 @@ export function MeusNumerosPage() {
             {error ? <p className="form-error">{error}</p> : null}
             <button className="button primary" type="submit" disabled={loading || !cpfValido}>
               <Search size={16} />
-              {loading ? 'Consultando...' : 'Ver meus números'}
+              {loading ? 'Consultando...' : 'Buscar meus números'}
             </button>
           </form>
         </section>
 
         {searched && orders.length > 0 ? (
           <section className="buscar-results">
-            {numerosComprados.length > 0 ? (
-              <article className="buscar-result-card meus-numeros-summary">
-                <header className="buscar-result-head">
-                  <div>
-                    <p className="home-section-id">Números confirmados</p>
-                    <h2>{approvedOrders[0]?.participante_nome || 'Participante'}</h2>
-                    <p className="muted">CPF {formatCpf(cpf)}</p>
-                  </div>
-                  <span className="meus-numeros-count">
-                    <Ticket size={18} />
-                    {numerosComprados.length}
-                  </span>
-                </header>
-
-                <div className="meus-numeros-grid" aria-label="Seus números comprados">
-                  {numerosComprados.map((numero) => (
-                    <span key={numero} className="meus-numero-chip">
-                      {String(numero).padStart(3, '0')}
-                    </span>
-                  ))}
+            <article className="buscar-result-card meus-numeros-summary">
+              <header className="buscar-result-head">
+                <div>
+                  <p className="home-section-id">Seus números</p>
+                  <h2>{orders[0]?.participante_nome || 'Participante'}</h2>
+                  <p className="muted">CPF {formatCpf(cpf)}</p>
                 </div>
+                <span className="meus-numeros-count">
+                  <Ticket size={18} />
+                  {numeros.todos.length}
+                </span>
+              </header>
 
-                <p className="muted meus-numeros-hint">
-                  Estes são os números com pagamento aprovado. Guarde-os para o sorteio!
-                </p>
-              </article>
-            ) : (
-              <article className="buscar-result-card">
+              {numeros.confirmados.length > 0 ? (
+                <>
+                  <p className="meus-numeros-section-label">Confirmados (pagamento aprovado)</p>
+                  <div className="meus-numeros-grid" aria-label="Números confirmados">
+                    {numeros.confirmados.map((numero) => (
+                      <span key={numero} className="meus-numero-chip is-confirmed">
+                        {String(numero).padStart(3, '0')}
+                      </span>
+                    ))}
+                  </div>
+                </>
+              ) : null}
+
+              {numeros.aguardando.length > 0 ? (
+                <>
+                  <p className="meus-numeros-section-label">Aguardando pagamento</p>
+                  <div className="meus-numeros-grid" aria-label="Números aguardando pagamento">
+                    {numeros.aguardando.map((numero) => (
+                      <span key={numero} className="meus-numero-chip is-pending">
+                        {String(numero).padStart(3, '0')}
+                      </span>
+                    ))}
+                  </div>
+                </>
+              ) : null}
+
+              {numeros.todos.length === 0 ? (
                 <p className="form-error">
-                  Nenhum número confirmado ainda. Se você já pagou, aguarde alguns minutos e
+                  Nenhum número ativo para este CPF. Se você já pagou, aguarde alguns minutos e
                   consulte de novo.
                 </p>
-              </article>
-            )}
+              ) : (
+                <p className="muted meus-numeros-hint">
+                  Os números confirmados já estão garantidos para o sorteio. Que Deus abençoe!
+                </p>
+              )}
+            </article>
 
             {approvedOrders.map((order) => (
               <article key={order.id} className="buscar-result-card">
