@@ -130,6 +130,10 @@ export function OrderPage() {
     }
   }, [id, refreshNumbers])
 
+  const handlePaymentError = useCallback((message: string) => {
+    setError(message)
+  }, [])
+
   if (loading) return <p className="loading-message container">Carregando pedido...</p>
   if (error || !order) return <p className="form-error container">{error || 'Pedido não encontrado.'}</p>
 
@@ -154,7 +158,7 @@ export function OrderPage() {
             order={order}
             loading={paymentLoading}
             onApproved={() => void handlePaymentApproved()}
-            onError={(message) => setError(message)}
+            onError={handlePaymentError}
           />
         ) : null}
       </div>

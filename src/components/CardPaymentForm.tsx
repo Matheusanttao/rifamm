@@ -1,23 +1,9 @@
-import { lazy, Suspense, useEffect, useId, useState } from 'react'
-import { initMercadoPago } from '@mercadopago/sdk-react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { CardPayment } from '@mercadopago/sdk-react'
 import { CreditCard, Shield } from 'lucide-react'
+import { initMercadoPagoSdk, isMercadoPagoConfigured } from '../lib/mercadopago-init'
 import { processCardPayment } from '../lib/mercadopago'
 import type { Order } from '../types/raffle'
-
-const CardPayment = lazy(async () => {
-  const module = await import('@mercadopago/sdk-react')
-  return { default: module.CardPayment }
-})
-
-const publicKey = import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY as string | undefined
-let mercadoPagoReady = false
-
-function ensureMercadoPago() {
-  if (!publicKey || mercadoPagoReady) return Boolean(publicKey)
-  initMercadoPago(publicKey, { locale: 'pt-BR' })
-  mercadoPagoReady = true
-  return true
-}
 
 type CardPaymentFormProps = {
   order: Order
@@ -26,49 +12,107 @@ type CardPaymentFormProps = {
 }
 
 export function CardPaymentForm({ order, onApproved, onError }: CardPaymentFormProps) {
-  const brickId = useId().replace(/:/g, '')
-  const [ready, setReady] = useState(false)
+  const [sdkReady, setSdkReady] = useState(false)
+  const [brickReady, setBrickReady] = useState(false)
   const [processing, setProcessing] = useState(false)
-  const configured = ensureMercadoPago()
+  const [brickError, setBrickError] = useState('')
 
   useEffect(() => {
-    ensureMercadoPago()
+    if (!isMercadoPagoConfigured()) return
+    initMercadoPagoSdk()
+    setSdkReady(true)
   }, [])
 
-  async function handleSubmit(formData: {
-    token: string
-    installments: number
-    payment_method_id: string
-    issuer_id?: string
-    transaction_amount: number
-    payer?: { email?: string }
-  }) {
-    setProcessing(true)
-    try {
-      const result = await processCardPayment(order.id, formData)
-      if (result.status === 'aprovado') {
-        onApproved?.()
-        return
-      }
-      if (result.status === 'recusado' || result.status === 'cancelado') {
-        throw new Error('Pagamento recusado. Verifique os dados do cartão ou tente outro cartão.')
-      }
-      onApproved?.()
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Não foi possível processar o pagamento.'
-      onError?.(message)
-      throw err
-    } finally {
-      setProcessing(false)
-    }
-  }
+  const initialization = useMemo(
+    () => ({
+      amount: Number(order.valor_total),
+      payer: {
+        email: order.participante_email,
+        ...(order.participante_cpf
+          ? {
+              identification: {
+                type: 'CPF' as const,
+                number: order.participante_cpf.replace(/\D/g, ''),
+              },
+            }
+          : {}),
+      },
+    }),
+    [order.valor_total, order.participante_email, order.participante_cpf],
+  )
 
-  if (!configured) {
+  const customization = useMemo(
+    () => ({
+      visual: {
+        style: {
+          theme: 'default' as const,
+        },
+      },
+      paymentMethods: {
+        maxInstallments: 12,
+      },
+    }),
+    [],
+  )
+
+  const handleReady = useCallback(() => {
+    setBrickReady(true)
+    setBrickError('')
+  }, [])
+
+  const handleBrickError = useCallback(
+    (error: { message?: string; type?: string }) => {
+      console.error('CardPayment brick error:', error)
+      const message =
+        error?.message ||
+        'Erro ao carregar o formulário de cartão. Verifique a chave pública do Mercado Pago.'
+      setBrickError(message)
+      onError?.(message)
+    },
+    [onError],
+  )
+
+  const handleSubmit = useCallback(
+    async (formData: {
+      token: string
+      installments: number
+      payment_method_id: string
+      issuer_id?: string
+      transaction_amount: number
+      payer?: { email?: string }
+    }) => {
+      setProcessing(true)
+      try {
+        const result = await processCardPayment(order.id, formData)
+        if (result.status === 'aprovado') {
+          onApproved?.()
+          return
+        }
+        if (result.status === 'recusado' || result.status === 'cancelado') {
+          throw new Error('Pagamento recusado. Verifique os dados do cartão ou tente outro cartão.')
+        }
+        onApproved?.()
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Não foi possível processar o pagamento.'
+        onError?.(message)
+        throw err
+      } finally {
+        setProcessing(false)
+      }
+    },
+    [order.id, onApproved, onError],
+  )
+
+  if (!isMercadoPagoConfigured()) {
     return (
       <p className="form-error">
         Configure VITE_MERCADOPAGO_PUBLIC_KEY para habilitar pagamento com cartão.
       </p>
     )
+  }
+
+  if (!sdkReady) {
+    return <p className="muted">Iniciando checkout seguro...</p>
   }
 
   return (
@@ -86,37 +130,20 @@ export function CardPaymentForm({ order, onApproved, onError }: CardPaymentFormP
         Parcelamento em até 12x conforme disponibilidade do cartão.
       </p>
 
-      <div className={`card-payment-brick${ready ? ' is-ready' : ''}`} id={brickId}>
-        <Suspense fallback={<p className="muted">Carregando formulário seguro...</p>}>
-          <CardPayment
-            initialization={{
-              amount: Number(order.valor_total),
-              payer: {
-                email: order.participante_email,
-              },
-            }}
-            customization={{
-              visual: {
-                style: {
-                  theme: 'default',
-                },
-              },
-              paymentMethods: {
-                maxInstallments: 12,
-              },
-            }}
-            onReady={() => setReady(true)}
-            onError={(error) => {
-              console.error('CardPayment brick error:', error)
-              onError?.('Erro ao carregar o formulário de cartão. Atualize a página.')
-            }}
-            onSubmit={handleSubmit}
-          />
-        </Suspense>
+      <div className={`card-payment-brick${brickReady ? ' is-ready' : ''}`}>
+        <CardPayment
+          id={`card-payment-${order.id}`}
+          initialization={initialization}
+          customization={customization}
+          onReady={handleReady}
+          onError={handleBrickError}
+          onSubmit={handleSubmit}
+        />
       </div>
 
+      {brickError ? <p className="form-error">{brickError}</p> : null}
       {processing ? <p className="muted">Processando pagamento...</p> : null}
-      {!ready ? <p className="muted">Carregando formulário seguro...</p> : null}
+      {!brickReady && !brickError ? <p className="muted">Carregando formulário seguro...</p> : null}
     </div>
   )
 }
