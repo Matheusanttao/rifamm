@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
-import { PaymentCard } from '../components/PaymentCard'
 import { PaymentPix } from '../components/PaymentPix'
 import { PaymentStatusPanel } from '../components/PaymentStatusPanel'
 import { initMercadoPagoPayment, syncMercadoPagoPayment } from '../lib/mercadopago'
@@ -91,9 +90,6 @@ export function OrderPage() {
       if (!id) return
       void refreshOrder(id, true).then((pedido) => {
         if (!pedido) return
-        if (pedido.metodo_pagamento === 'cartao' && pedido.status_pagamento === 'aguardando') {
-          return
-        }
         setOrder((current) => {
             if (
               current?.status_pagamento === 'aguardando' &&
@@ -124,19 +120,6 @@ export function OrderPage() {
     }
   }, [id, refreshNumbers])
 
-  const handlePaymentApproved = useCallback(async () => {
-    if (!id) return
-    const pedido = await fetchOrder(id)
-    if (pedido) {
-      setOrder(pedido)
-      void refreshNumbers()
-    }
-  }, [id, refreshNumbers])
-
-  const handlePaymentError = useCallback((message: string) => {
-    setError(message)
-  }, [])
-
   if (loading) return <p className="loading-message container">Carregando pedido...</p>
   if (error || !order) return <p className="form-error container">{error || 'Pedido não encontrado.'}</p>
 
@@ -156,13 +139,14 @@ export function OrderPage() {
         ) : null}
 
         {order.status_pagamento === 'aguardando' && order.metodo_pagamento === 'cartao' ? (
-          <PaymentCard
-            settings={settings}
-            order={order}
-            loading={paymentLoading}
-            onApproved={() => void handlePaymentApproved()}
-            onError={handlePaymentError}
-          />
+          <div className="payment-pix">
+            <p className="form-error">
+              Pagamento por cartão está indisponível no momento. Faça um novo pedido escolhendo PIX.
+            </p>
+            <Link className="button primary" to="/participar">
+              Fazer novo pedido
+            </Link>
+          </div>
         ) : null}
       </div>
     </main>

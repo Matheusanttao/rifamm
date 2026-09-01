@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
-import { ArrowLeft, ArrowRight, CreditCard, QrCode } from 'lucide-react'
+import { ArrowLeft, ArrowRight, QrCode } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { NumberGrid } from '../components/NumberGrid'
 import { OrderSummary } from '../components/OrderSummary'
@@ -33,7 +33,7 @@ export function ParticiparPage() {
   const [email, setEmail] = useState('')
   const [telefone, setTelefone] = useState('')
   const [cpf, setCpf] = useState('')
-  const [metodo, setMetodo] = useState<PaymentMethod>('pix')
+  const metodo: PaymentMethod = 'pix'
 
   const cpfValido = isValidCpf(cpf)
   const emailValido = isValidEmail(email)
@@ -97,7 +97,7 @@ export function ParticiparPage() {
       )
       createdOrderId = order.id
 
-      if (settings.pagamento_habilitado && isSupabaseConfigured && metodo === 'pix') {
+      if (settings.pagamento_habilitado && isSupabaseConfigured) {
         const payment = await initMercadoPagoPayment(order.id, metodo)
         await applyPaymentDataToOrder(order.id, payment)
       }
@@ -230,32 +230,14 @@ export function ParticiparPage() {
             {step === 'pagamento' ? (
               <form className="stacked-form" onSubmit={handleCreateOrder}>
                 <div className="payment-method-picker">
-                  <button
-                    type="button"
-                    className={`payment-method-option ${metodo === 'pix' ? 'active' : ''}`}
-                    onClick={() => setMetodo('pix')}
-                  >
+                  <div className="payment-method-option active">
                     <QrCode size={18} /> PIX
-                  </button>
-                  <button
-                    type="button"
-                    className={`payment-method-option ${metodo === 'cartao' ? 'active' : ''}`}
-                    onClick={() => setMetodo('cartao')}
-                  >
-                    <CreditCard size={18} /> Cartão
-                  </button>
+                  </div>
                 </div>
 
-                {metodo === 'pix' ? (
-                  <p className="muted">
-                    Após confirmar, você verá o QR Code e o código PIX gerados pelo Mercado Pago.
-                  </p>
-                ) : (
-                  <p className="muted">
-                    Após confirmar, o formulário de cartão aparecerá na próxima tela para você pagar
-                    sem sair do site.
-                  </p>
-                )}
+                <p className="muted">
+                  Após confirmar, você verá o QR Code e o código PIX gerados pelo Mercado Pago.
+                </p>
 
                 {!settings.pagamento_habilitado ? (
                   <p className="demo-payment-note">
