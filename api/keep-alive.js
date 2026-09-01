@@ -1,7 +1,9 @@
 /**
- * Ping diario no Supabase para evitar pausa por inatividade (plano free).
- * Agendado via cron no vercel.json — roda 1x por dia.
+ * Ping diario no Supabase + sincroniza pedidos pendentes.
+ * Agendado via cron no vercel.json — roda 1x por dia (limite do plano Hobby).
  */
+import { syncPendingOrders } from './lib/sync-pending-orders.js'
+
 export default async function handler(req, res) {
   const cronSecret = process.env.CRON_SECRET
   const auth = req.headers.authorization
@@ -48,10 +50,18 @@ export default async function handler(req, res) {
       })
     }
 
+    let syncSummary = null
+    try {
+      syncSummary = await syncPendingOrders()
+    } catch (syncError) {
+      console.error('keep-alive sync error:', syncError)
+    }
+
     return res.status(200).json({
       ok: true,
       message: 'Supabase ativo',
       durationMs,
+      sync: syncSummary,
       at: new Date().toISOString(),
     })
   } catch (error) {
