@@ -24,24 +24,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const response = await fetch(
-      `${supabaseUrl}/rest/v1/rpc/liberar_reservas_expiradas`,
-      {
-        method: 'POST',
-        headers: {
-          apikey: supabaseKey,
-          Authorization: `Bearer ${supabaseKey}`,
-          'Content-Type': 'application/json',
-        },
-      },
-    )
-
-    let liberados = 0
-    if (response.ok) {
-      const body = await response.json().catch(() => null)
-      liberados = typeof body === 'number' ? body : 0
-    }
-
+    const startedAt = Date.now()
     const ping = await fetch(
       `${supabaseUrl}/rest/v1/site_settings?select=id&limit=1`,
       {
@@ -52,6 +35,8 @@ export default async function handler(req, res) {
       },
     )
 
+    const durationMs = Date.now() - startedAt
+
     if (!ping.ok) {
       const body = await ping.text()
       return res.status(502).json({
@@ -59,13 +44,14 @@ export default async function handler(req, res) {
         error: 'Supabase respondeu com erro.',
         status: ping.status,
         body,
+        durationMs,
       })
     }
 
     return res.status(200).json({
       ok: true,
-      message: 'Supabase pingado com sucesso.',
-      reservas_liberadas: liberados,
+      message: 'Supabase ativo',
+      durationMs,
       at: new Date().toISOString(),
     })
   } catch (error) {
