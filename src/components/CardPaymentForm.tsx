@@ -1,10 +1,6 @@
 import { useEffect, useId, useState } from 'react'
 import { CardPayment, initMercadoPago } from '@mercadopago/sdk-react'
 import { CreditCard, Shield } from 'lucide-react'
-import type {
-  ICardPaymentBrickPayer,
-  ICardPaymentFormData,
-} from '@mercadopago/sdk-react/esm/bricks/cardPayment/type'
 import { processCardPayment } from '../lib/mercadopago'
 import type { Order } from '../types/raffle'
 
@@ -34,10 +30,17 @@ export function CardPaymentForm({ order, onApproved, onError }: CardPaymentFormP
     ensureMercadoPago()
   }, [])
 
-  async function handleSubmit(formData: ICardPaymentFormData<ICardPaymentBrickPayer>) {
+  async function handleSubmit(formData: {
+    token: string
+    installments: number
+    payment_method_id: string
+    issuer_id?: string
+    transaction_amount: number
+    payer?: { email?: string }
+  }) {
     setProcessing(true)
     try {
-      const result = await processCardPayment(order.id, formData as unknown as Record<string, unknown>)
+      const result = await processCardPayment(order.id, formData)
       if (result.status === 'aprovado') {
         onApproved?.()
         return
