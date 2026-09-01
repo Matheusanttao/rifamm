@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import {
   AlertCircle,
   Ban,
@@ -8,16 +9,18 @@ import {
 import type { Order } from '../types/raffle'
 import { formatDateTime, formatNumbersList } from '../lib/format'
 import { useSite } from '../lib/site-context'
+import { ReservationCountdown } from './ReservationCountdown'
 import { StatusBadge } from './StatusBadge'
 
 type PaymentStatusPanelProps = {
   order: Order
+  onReservationExpire?: () => void
 }
 
 const statusCopy: Record<Order['status_pagamento'], { title: string; text: string; icon: typeof Clock3 }> = {
   aguardando: {
     title: 'Aguardando pagamento',
-    text: 'Seus números estão reservados (não vendidos). Conclua o PIX em até 30 minutos ou eles voltam a ficar disponíveis.',
+    text: 'Seus números estão reservados. Conclua o pagamento no prazo para confirmar a participação.',
     icon: Clock3,
   },
   aprovado: {
@@ -32,7 +35,7 @@ const statusCopy: Record<Order['status_pagamento'], { title: string; text: strin
   },
   expirado: {
     title: 'Reserva expirada',
-    text: 'O prazo para pagamento terminou e os números foram liberados. Você pode fazer um novo pedido.',
+    text: 'O prazo para pagamento terminou e os números foram liberados. Faça um novo pedido para participar novamente.',
     icon: AlertCircle,
   },
   cancelado: {
@@ -42,13 +45,15 @@ const statusCopy: Record<Order['status_pagamento'], { title: string; text: strin
   },
 }
 
-export function PaymentStatusPanel({ order }: PaymentStatusPanelProps) {
+export function PaymentStatusPanel({ order, onReservationExpire }: PaymentStatusPanelProps) {
   const { settings } = useSite()
   const copy = statusCopy[order.status_pagamento]
   const Icon = copy.icon
+  const showCountdown =
+    order.status_pagamento === 'aguardando' && Boolean(order.reservado_ate)
   const aguardandoText =
     order.status_pagamento === 'aguardando'
-      ? `Seus números estão reservados por ${settings.reserva_minutos} minutos. Conclua o pagamento nesse prazo para confirmar a participação.`
+      ? `Seus números estão reservados por ${settings.reserva_minutos} minutos. Use o cronômetro abaixo e conclua o pagamento nesse prazo.`
       : copy.text
 
   return (
@@ -63,6 +68,14 @@ export function PaymentStatusPanel({ order }: PaymentStatusPanelProps) {
           <p>{aguardandoText}</p>
         </div>
       </div>
+
+      {showCountdown ? (
+        <ReservationCountdown
+          reservadoAte={order.reservado_ate!}
+          reservaMinutos={settings.reserva_minutos}
+          onExpire={onReservationExpire}
+        />
+      ) : null}
 
       <div className="order-confirmation-details">
         <div>
@@ -86,6 +99,14 @@ export function PaymentStatusPanel({ order }: PaymentStatusPanelProps) {
           </div>
         ) : null}
       </div>
+
+      {order.status_pagamento === 'expirado' || order.status_pagamento === 'recusado' ? (
+        <div className="payment-status-actions">
+          <Link className="button primary" to="/participar">
+            Fazer novo pedido
+          </Link>
+        </div>
+      ) : null}
     </div>
   )
 }

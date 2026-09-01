@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import { PaymentCard } from '../components/PaymentCard'
 import { PaymentPix } from '../components/PaymentPix'
 import { PaymentStatusPanel } from '../components/PaymentStatusPanel'
 import { initMercadoPagoPayment, syncMercadoPagoPayment } from '../lib/mercadopago'
-import { applyPaymentDataToOrder, fetchOrder } from '../lib/orders'
+import { applyPaymentDataToOrder, expireOverdueOrder, fetchOrder } from '../lib/orders'
 import { useSite } from '../lib/site-context'
 import { isSupabaseConfigured } from '../lib/supabase'
 import type { Order } from '../types/raffle'
@@ -105,7 +105,22 @@ export function OrderPage() {
     }, 5000)
 
     return () => window.clearInterval(interval)
-  }, [id, settings])
+  }, [id, settings, refreshNumbers])
+
+  const handleReservationExpire = useCallback(async () => {
+    if (!id) return
+    try {
+      const pedido = await expireOverdueOrder(id)
+      if (pedido) {
+        setOrder(pedido)
+        if (pedido.status_pagamento === 'expirado') {
+          void refreshNumbers()
+        }
+      }
+    } catch (err) {
+      console.error(err)
+    }
+  }, [id, refreshNumbers])
 
   if (loading) return <p className="loading-message container">Carregando pedido...</p>
   if (error || !order) return <p className="form-error container">{error || 'Pedido não encontrado.'}</p>
@@ -119,7 +134,7 @@ export function OrderPage() {
           </Link>
         </div>
 
-        <PaymentStatusPanel order={order} />
+        <PaymentStatusPanel order={order} onReservationExpire={handleReservationExpire} />
 
         {order.status_pagamento === 'aguardando' && order.metodo_pagamento === 'pix' ? (
           <PaymentPix order={order} settings={settings} loading={paymentLoading} />

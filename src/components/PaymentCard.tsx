@@ -1,6 +1,7 @@
 import { CreditCard, ExternalLink, Shield } from 'lucide-react'
 import type { Order } from '../types/raffle'
 import type { SiteSettings } from '../types/settings'
+import { isReservationExpired } from '../hooks/useReservationCountdown'
 
 type PaymentCardProps = {
   settings: SiteSettings
@@ -30,6 +31,14 @@ export function PaymentCard({ settings, order, loading }: PaymentCardProps) {
         <p className="muted">Preparando checkout seguro no Mercado Pago...</p>
       </div>
     )
+  }
+
+  if (
+    order?.reservado_ate &&
+    isReservationExpired(order.reservado_ate) &&
+    order.status_pagamento === 'aguardando'
+  ) {
+    return null
   }
 
   const checkoutUrl = order?.checkout_url

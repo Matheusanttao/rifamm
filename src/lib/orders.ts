@@ -2,7 +2,7 @@ import type { CreateOrderInput, Order, PaymentMethod } from '../types/raffle'
 import type { SiteSettings } from '../types/settings'
 import { isValidCpf, normalizeCpf } from './cpf'
 import { generateOrderCode } from './format'
-import { releaseNumbersLocally, reserveNumbersLocally } from './numbers'
+import { releaseExpiredReservations, releaseNumbersLocally, reserveNumbersLocally } from './numbers'
 import { isSupabaseConfigured, supabase } from './supabase'
 
 const ORDERS_KEY = 'rifa_pedidos_demo'
@@ -179,8 +179,59 @@ export async function searchOrdersByCpf(cpf: string): Promise<Order[]> {
   return data || []
 }
 
+const NUMBERS_KEY = 'rifa_numeros_demo'
+
+function expireLocalOrder(order: Order): Order {
+  if (order.status_pagamento !== 'aguardando' || !order.reservado_ate) return order
+  if (new Date(order.reservado_ate).getTime() > Date.now()) return order
+
+  try {
+    const raw = localStorage.getItem(NUMBERS_KEY)
+    if (raw) {
+      const numbers = JSON.parse(raw) as Array<{
+        numero: number
+        status: string
+        pedido_id: string | null
+        reservado_ate: string | null
+      }>
+      const updated = numbers.map((item) =>
+        order.numeros.includes(item.numero) && item.pedido_id === order.id
+          ? { ...item, status: 'disponivel', pedido_id: null, reservado_ate: null }
+          : item,
+      )
+      localStorage.setItem(NUMBERS_KEY, JSON.stringify(updated))
+    }
+  } catch {
+    /* ignore */
+  }
+
+  const orders = readLocalOrders()
+  const index = orders.findIndex((item) => item.id === order.id)
+  if (index === -1) return order
+
+  const expired: Order = {
+    ...order,
+    status_pagamento: 'expirado',
+    updated_at: new Date().toISOString(),
+  }
+  orders[index] = expired
+  writeLocalOrders(orders)
+  return expired
+}
+
 async function refreshLocalOrderStatus(order: Order): Promise<Order> {
-  return order
+  return expireLocalOrder(order)
+}
+
+export async function expireOverdueOrder(orderId: string): Promise<Order | null> {
+  if (!isSupabaseConfigured) {
+    const order = readLocalOrders().find((item) => item.id === orderId) || null
+    if (!order) return null
+    return expireLocalOrder(order)
+  }
+
+  await releaseExpiredReservations()
+  return fetchOrder(orderId)
 }
 
 export function getPixQrUrl(copiaCola: string, base64?: string | null) {

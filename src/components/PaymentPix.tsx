@@ -3,7 +3,8 @@ import { Check, Copy, CreditCard, QrCode } from 'lucide-react'
 import type { Order } from '../types/raffle'
 import type { SiteSettings } from '../types/settings'
 import { getPixQrUrl } from '../lib/orders'
-import { formatCurrency, formatDateTime } from '../lib/format'
+import { formatCurrency } from '../lib/format'
+import { isReservationExpired } from '../hooks/useReservationCountdown'
 
 type PaymentPixProps = {
   order: Order
@@ -38,6 +39,14 @@ export function PaymentPix({ order, settings, loading }: PaymentPixProps) {
         <p className="form-error">Não foi possível gerar o PIX. Atualize a página ou tente novamente.</p>
       </div>
     )
+  }
+
+  if (
+    order.reservado_ate &&
+    isReservationExpired(order.reservado_ate) &&
+    order.status_pagamento === 'aguardando'
+  ) {
+    return null
   }
 
   return (
@@ -94,17 +103,10 @@ export function PaymentPix({ order, settings, loading }: PaymentPixProps) {
         Valor: <strong>{formatCurrency(order.valor_total)}</strong>
       </p>
 
-      {order.reservado_ate ? (
-        <p className="muted payment-deadline">
-          Pague até <strong>{formatDateTime(order.reservado_ate)}</strong> ({settings.reserva_minutos}{' '}
-          min). Depois desse prazo os números voltam para a grade.
-        </p>
-      ) : null}
-
       <p className="payment-note">
         <CreditCard size={14} />
-        O pagamento só será confirmado após validação no Mercado Pago. Se você não pagar em até 30
-        minutos, os números voltam a ficar disponíveis para outras pessoas.
+        O pagamento só será confirmado após validação no Mercado Pago. Se você não pagar em até{' '}
+        {settings.reserva_minutos} minutos, os números voltam a ficar disponíveis para outras pessoas.
       </p>
     </div>
   )
