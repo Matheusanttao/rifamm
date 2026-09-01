@@ -89,17 +89,19 @@ export function OrderPage() {
     const interval = window.setInterval(() => {
       if (!id) return
       void refreshOrder(id, true).then((pedido) => {
-        if (pedido) {
-          setOrder((current) => {
+        if (!pedido) return
+        if (pedido.metodo_pagamento === 'cartao' && pedido.status_pagamento === 'aguardando') {
+          return
+        }
+        setOrder((current) => {
             if (
               current?.status_pagamento === 'aguardando' &&
               pedido.status_pagamento !== 'aguardando'
             ) {
               void refreshNumbers()
             }
-            return pedido
-          })
-        }
+          return pedido
+        })
       })
     }, 5000)
 
