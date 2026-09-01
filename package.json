@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test:email": "node scripts/test-email.mjs"
+    "test:email": "node scripts/test-email.mjs",
+    "setup": "node scripts/setup-production.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.1",
