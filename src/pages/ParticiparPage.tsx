@@ -4,7 +4,6 @@ import { ArrowLeft, ArrowRight, CreditCard, QrCode } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { NumberGrid } from '../components/NumberGrid'
 import { OrderSummary } from '../components/OrderSummary'
-import { PaymentCard } from '../components/PaymentCard'
 import { formatCpf, isValidCpf, normalizeCpf } from '../lib/cpf'
 import {
   formatEmailInput,
@@ -96,14 +95,9 @@ export function ParticiparPage() {
       )
       createdOrderId = order.id
 
-      if (settings.pagamento_habilitado && isSupabaseConfigured) {
+      if (settings.pagamento_habilitado && isSupabaseConfigured && metodo === 'pix') {
         const payment = await initMercadoPagoPayment(order.id, metodo)
         await applyPaymentDataToOrder(order.id, payment)
-
-        if (metodo === 'cartao' && payment.checkout_url) {
-          window.location.href = payment.checkout_url
-          return
-        }
       }
 
       await refreshNumbers()
@@ -255,7 +249,10 @@ export function ParticiparPage() {
                     Após confirmar, você verá o QR Code e o código PIX gerados pelo Mercado Pago.
                   </p>
                 ) : (
-                  <PaymentCard settings={settings} />
+                  <p className="muted">
+                    Após confirmar, o formulário de cartão aparecerá na próxima tela para você pagar
+                    sem sair do site.
+                  </p>
                 )}
 
                 {!settings.pagamento_habilitado ? (
@@ -275,9 +272,7 @@ export function ParticiparPage() {
                 <button className="button primary large" type="submit" disabled={submitting}>
                   {submitting
                     ? 'Processando...'
-                    : metodo === 'cartao' && settings.pagamento_habilitado
-                      ? 'Confirmar e ir ao checkout'
-                      : 'Confirmar e ir para pagamento'}
+                    : 'Confirmar e ir para pagamento'}
                 </button>
               </form>
             ) : null}

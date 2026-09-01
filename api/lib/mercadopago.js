@@ -118,6 +118,52 @@ export async function createPixPayment({ order, baseUrl, idempotencyKey }) {
   }
 }
 
+export async function createCardPayment({ order, baseUrl, idempotencyKey, cardData }) {
+  const payer = splitName(order.participante_nome)
+  const identification = payerIdentification(order)
+  const amount = Number(order.valor_total)
+
+  if (Number(cardData.transaction_amount) !== amount) {
+    throw new Error('Valor do pagamento não confere com o pedido.')
+  }
+
+  const payment = await mpFetch('/v1/payments', {
+    method: 'POST',
+    headers: {
+      'X-Idempotency-Key': idempotencyKey,
+    },
+    body: JSON.stringify({
+      transaction_amount: amount,
+      token: cardData.token,
+      description: `Rifa ${order.codigo} — ${order.numeros.length} número(s)`,
+      installments: Number(cardData.installments) || 1,
+      payment_method_id: cardData.payment_method_id,
+      issuer_id: cardData.issuer_id,
+      external_reference: order.id,
+      payer: {
+        email: cardData.payer?.email || order.participante_email,
+        first_name: payer.first_name,
+        last_name: payer.last_name,
+        ...(identification ? { identification } : {}),
+      },
+      metadata: {
+        pedido_id: order.id,
+        codigo: order.codigo,
+      },
+      notification_url: `${baseUrl}/api/mercadopago/webhook`,
+    }),
+  })
+
+  return {
+    payment,
+    provider_payment_id: String(payment.id),
+    pix_copia_cola: null,
+    pix_qr_base64: null,
+    checkout_url: null,
+    mp_status: payment.status,
+  }
+}
+
 export async function createCardCheckout({ order, baseUrl, idempotencyKey }) {
   const payerName = splitName(order.participante_nome)
   const identification = payerIdentification(order)

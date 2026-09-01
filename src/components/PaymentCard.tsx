@@ -1,15 +1,18 @@
-import { CreditCard, ExternalLink, Shield } from 'lucide-react'
+import { CreditCard } from 'lucide-react'
 import type { Order } from '../types/raffle'
 import type { SiteSettings } from '../types/settings'
 import { isReservationExpired } from '../hooks/useReservationCountdown'
+import { CardPaymentForm } from './CardPaymentForm'
 
 type PaymentCardProps = {
   settings: SiteSettings
   order?: Order | null
   loading?: boolean
+  onApproved?: () => void
+  onError?: (message: string) => void
 }
 
-export function PaymentCard({ settings, order, loading }: PaymentCardProps) {
+export function PaymentCard({ settings, order, loading, onApproved, onError }: PaymentCardProps) {
   if (!settings.pagamento_habilitado) {
     return (
       <div className="payment-card-block">
@@ -18,8 +21,8 @@ export function PaymentCard({ settings, order, loading }: PaymentCardProps) {
           <h3>Cartão de crédito</h3>
         </div>
         <p className="demo-payment-note">
-          O checkout seguro com cartão estará disponível quando os pagamentos reais forem
-          habilitados no painel administrativo.
+          O pagamento com cartão estará disponível quando os pagamentos reais forem habilitados no
+          painel administrativo.
         </p>
       </div>
     )
@@ -28,7 +31,7 @@ export function PaymentCard({ settings, order, loading }: PaymentCardProps) {
   if (loading) {
     return (
       <div className="payment-card-block">
-        <p className="muted">Preparando checkout seguro no Mercado Pago...</p>
+        <p className="muted">Preparando pagamento com cartão...</p>
       </div>
     )
   }
@@ -41,30 +44,15 @@ export function PaymentCard({ settings, order, loading }: PaymentCardProps) {
     return null
   }
 
-  const checkoutUrl = order?.checkout_url
-
-  return (
-    <div className="payment-card-block">
-      <div className="payment-method-header">
-        <CreditCard size={20} />
-        <h3>Checkout seguro — Mercado Pago</h3>
+  if (!order) {
+    return (
+      <div className="payment-card-block">
+        <p className="muted">
+          Confirme o pedido para carregar o formulário de cartão com o valor total da compra.
+        </p>
       </div>
-      <p>
-        Você será redirecionado ao ambiente seguro do Mercado Pago para pagar com cartão de
-        crédito. Nenhum dado de cartão é armazenado neste site.
-      </p>
-      <p className="payment-note">
-        <Shield size={14} />
-        A confirmação da compra depende da validação do pagamento no servidor via webhook.
-      </p>
-      {checkoutUrl ? (
-        <a className="button primary" href={checkoutUrl}>
-          <ExternalLink size={16} />
-          Ir para checkout seguro
-        </a>
-      ) : (
-        <p className="form-error">Link de checkout indisponível. Atualize a página.</p>
-      )}
-    </div>
-  )
+    )
+  }
+
+  return <CardPaymentForm order={order} onApproved={onApproved} onError={onError} />
 }

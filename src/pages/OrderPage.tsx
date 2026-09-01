@@ -31,9 +31,8 @@ export function OrderPage() {
       }
 
       const needsPix = pedido.metodo_pagamento === 'pix' && !pedido.pix_copia_cola
-      const needsCard = pedido.metodo_pagamento === 'cartao' && !pedido.checkout_url
 
-      if (!needsPix && !needsCard) return pedido
+      if (!needsPix) return pedido
 
       setPaymentLoading(true)
       try {
@@ -122,6 +121,15 @@ export function OrderPage() {
     }
   }, [id, refreshNumbers])
 
+  const handlePaymentApproved = useCallback(async () => {
+    if (!id) return
+    const pedido = await fetchOrder(id)
+    if (pedido) {
+      setOrder(pedido)
+      void refreshNumbers()
+    }
+  }, [id, refreshNumbers])
+
   if (loading) return <p className="loading-message container">Carregando pedido...</p>
   if (error || !order) return <p className="form-error container">{error || 'Pedido não encontrado.'}</p>
 
@@ -141,7 +149,13 @@ export function OrderPage() {
         ) : null}
 
         {order.status_pagamento === 'aguardando' && order.metodo_pagamento === 'cartao' ? (
-          <PaymentCard settings={settings} order={order} loading={paymentLoading} />
+          <PaymentCard
+            settings={settings}
+            order={order}
+            loading={paymentLoading}
+            onApproved={() => void handlePaymentApproved()}
+            onError={(message) => setError(message)}
+          />
         ) : null}
       </div>
     </main>

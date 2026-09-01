@@ -1,5 +1,4 @@
 import {
-  createCardCheckout,
   createPixPayment,
   getBaseUrl,
 } from '../lib/mercadopago.js'
@@ -24,6 +23,15 @@ export default async function handler(req, res) {
 
     if (!['pix', 'cartao'].includes(method)) {
       return res.status(400).json({ error: 'Método inválido. Use pix ou cartao.' })
+    }
+
+    if (method === 'cartao') {
+      return res.status(200).json({
+        provider_payment_id: null,
+        pix_copia_cola: null,
+        pix_qr_base64: null,
+        checkout_url: null,
+      })
     }
 
     const settings = await fetchSiteSettings()
@@ -54,17 +62,14 @@ export default async function handler(req, res) {
         provider_payment_id: order.provider_payment_id,
         pix_copia_cola: null,
         pix_qr_base64: null,
-        checkout_url: order.checkout_url,
+        checkout_url: null,
       })
     }
 
     const baseUrl = getBaseUrl(req)
     const idempotencyKey = `rifa-${order.id}-${method}`
 
-    const paymentData =
-      method === 'pix'
-        ? await createPixPayment({ order, baseUrl, idempotencyKey })
-        : await createCardCheckout({ order, baseUrl, idempotencyKey })
+    const paymentData = await createPixPayment({ order, baseUrl, idempotencyKey })
 
     const updated = await updateOrder(order.id, {
       metodo_pagamento: method,

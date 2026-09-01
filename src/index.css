@@ -2468,6 +2468,15 @@ textarea:focus {
   color: var(--rose-deep);
 }
 
+.card-payment-brick {
+  margin-top: 1rem;
+  min-height: 420px;
+}
+
+.card-payment-brick:not(.is-ready) {
+  opacity: 0.6;
+}
+
 .payment-pix,
 .payment-card-block {
   margin-top: 1.5rem;

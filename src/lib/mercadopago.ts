@@ -7,6 +7,11 @@ export type MercadoPagoPaymentResult = {
   checkout_url: string | null
 }
 
+export type CardPaymentProcessResult = {
+  status: string
+  provider_payment_id: string | null
+}
+
 export async function initMercadoPagoPayment(
   orderId: string,
   method: PaymentMethod,
@@ -24,6 +29,25 @@ export async function initMercadoPagoPayment(
   }
 
   return data as MercadoPagoPaymentResult
+}
+
+export async function processCardPayment(
+  orderId: string,
+  cardData: Record<string, unknown>,
+): Promise<CardPaymentProcessResult> {
+  const response = await fetch('/api/mercadopago/process-card-payment', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ orderId, cardData }),
+  })
+
+  const data = await response.json().catch(() => ({}))
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Não foi possível processar o pagamento com cartão.')
+  }
+
+  return data as CardPaymentProcessResult
 }
 
 /** Consulta o Mercado Pago e atualiza o pedido se já estiver pago. */
