@@ -3,12 +3,6 @@
   "installCommand": "pnpm install --frozen-lockfile",
   "outputDirectory": "dist",
   "framework": "vite",
-  "crons": [
-    {
-      "path": "/api/keep-alive",
-      "schedule": "0 9 * * *"
-    }
-  ],
   "rewrites": [
     {
       "source": "/((?!api/).*)",
