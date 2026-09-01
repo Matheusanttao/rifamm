@@ -1,8 +1,13 @@
-import { useEffect, useId, useState } from 'react'
-import { CardPayment, initMercadoPago } from '@mercadopago/sdk-react'
+import { lazy, Suspense, useEffect, useId, useState } from 'react'
+import { initMercadoPago } from '@mercadopago/sdk-react'
 import { CreditCard, Shield } from 'lucide-react'
 import { processCardPayment } from '../lib/mercadopago'
 import type { Order } from '../types/raffle'
+
+const CardPayment = lazy(async () => {
+  const module = await import('@mercadopago/sdk-react')
+  return { default: module.CardPayment }
+})
 
 const publicKey = import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY as string | undefined
 let mercadoPagoReady = false
@@ -82,30 +87,32 @@ export function CardPaymentForm({ order, onApproved, onError }: CardPaymentFormP
       </p>
 
       <div className={`card-payment-brick${ready ? ' is-ready' : ''}`} id={brickId}>
-        <CardPayment
-          initialization={{
-            amount: Number(order.valor_total),
-            payer: {
-              email: order.participante_email,
-            },
-          }}
-          customization={{
-            visual: {
-              style: {
-                theme: 'default',
+        <Suspense fallback={<p className="muted">Carregando formulário seguro...</p>}>
+          <CardPayment
+            initialization={{
+              amount: Number(order.valor_total),
+              payer: {
+                email: order.participante_email,
               },
-            },
-            paymentMethods: {
-              maxInstallments: 12,
-            },
-          }}
-          onReady={() => setReady(true)}
-          onError={(error) => {
-            console.error('CardPayment brick error:', error)
-            onError?.('Erro ao carregar o formulário de cartão. Atualize a página.')
-          }}
-          onSubmit={handleSubmit}
-        />
+            }}
+            customization={{
+              visual: {
+                style: {
+                  theme: 'default',
+                },
+              },
+              paymentMethods: {
+                maxInstallments: 12,
+              },
+            }}
+            onReady={() => setReady(true)}
+            onError={(error) => {
+              console.error('CardPayment brick error:', error)
+              onError?.('Erro ao carregar o formulário de cartão. Atualize a página.')
+            }}
+            onSubmit={handleSubmit}
+          />
+        </Suspense>
       </div>
 
       {processing ? <p className="muted">Processando pagamento...</p> : null}

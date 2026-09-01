@@ -1,4 +1,8 @@
 {
+  "buildCommand": "pnpm run build",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "outputDirectory": "dist",
+  "framework": "vite",
   "crons": [
     {
       "path": "/api/keep-alive",
