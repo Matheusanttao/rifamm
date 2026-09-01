@@ -9,6 +9,7 @@ import { AdminOrders } from './pages/AdminOrders'
 import { AdminSettings } from './pages/AdminSettings'
 import { BuscarPedidoPage } from './pages/BuscarPedidoPage'
 import { Home } from './pages/Home'
+import { MeusNumerosPage } from './pages/MeusNumerosPage'
 import { OrderPage } from './pages/OrderPage'
 import { ParticiparPage } from './pages/ParticiparPage'
 
@@ -31,6 +32,7 @@ function PublicLayout() {
           <NavLink to="/">Início</NavLink>
           <a href="/#premios">Prêmios</a>
           <NavLink to="/participar">Participar</NavLink>
+          <NavLink to="/meus-numeros">Meus números</NavLink>
           <NavLink to="/buscar">Buscar pedido</NavLink>
           <a href="/#regulamento">Regulamento</a>
         </nav>
@@ -75,6 +77,7 @@ function App() {
       >
         <Route path="/" element={<Home />} />
         <Route path="/participar" element={<ParticiparPage />} />
+        <Route path="/meus-numeros" element={<MeusNumerosPage />} />
         <Route path="/buscar" element={<BuscarPedidoPage />} />
         <Route path="/pedido/:id" element={<OrderPage />} />
       </Route>

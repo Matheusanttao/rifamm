@@ -41,6 +41,12 @@ export function splitName(fullName) {
   }
 }
 
+function payerIdentification(order) {
+  const cpf = String(order.participante_cpf || '').replace(/\D/g, '')
+  if (cpf.length !== 11) return undefined
+  return { type: 'CPF', number: cpf }
+}
+
 export function mapPaymentStatus(mpStatus) {
   switch (mpStatus) {
     case 'approved':
@@ -56,8 +62,25 @@ export function mapPaymentStatus(mpStatus) {
   }
 }
 
+export function resolveMercadoPagoStatus(payment) {
+  const mapped = mapPaymentStatus(payment?.status)
+  if (mapped !== 'aguardando') return mapped
+
+  const expiration = payment?.date_of_expiration
+  if (expiration && new Date(expiration).getTime() <= Date.now()) {
+    return 'expirado'
+  }
+
+  return 'aguardando'
+}
+
+function pixExpirationDate(minutes = 30) {
+  return new Date(Date.now() + minutes * 60 * 1000).toISOString()
+}
+
 export async function createPixPayment({ order, baseUrl, idempotencyKey }) {
   const payer = splitName(order.participante_nome)
+  const identification = payerIdentification(order)
 
   const payment = await mpFetch('/v1/payments', {
     method: 'POST',
@@ -69,10 +92,12 @@ export async function createPixPayment({ order, baseUrl, idempotencyKey }) {
       description: `Rifa ${order.codigo} — ${order.numeros.length} número(s)`,
       payment_method_id: 'pix',
       external_reference: order.id,
+      date_of_expiration: pixExpirationDate(30),
       payer: {
         email: order.participante_email,
         first_name: payer.first_name,
         last_name: payer.last_name,
+        ...(identification ? { identification } : {}),
       },
       metadata: {
         pedido_id: order.id,
@@ -94,6 +119,9 @@ export async function createPixPayment({ order, baseUrl, idempotencyKey }) {
 }
 
 export async function createCardCheckout({ order, baseUrl, idempotencyKey }) {
+  const payerName = splitName(order.participante_nome)
+  const identification = payerIdentification(order)
+
   const preference = await mpFetch('/checkout/preferences', {
     method: 'POST',
     headers: {
@@ -112,8 +140,9 @@ export async function createCardCheckout({ order, baseUrl, idempotencyKey }) {
       ],
       payer: {
         email: order.participante_email,
-        name: splitName(order.participante_nome).first_name,
-        surname: splitName(order.participante_nome).last_name,
+        name: payerName.first_name,
+        surname: payerName.last_name,
+        ...(identification ? { identification } : {}),
       },
       external_reference: order.id,
       metadata: {

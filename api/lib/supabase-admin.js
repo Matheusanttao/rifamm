@@ -69,11 +69,43 @@ export async function confirmOrderPayment(orderId) {
   return response.json()
 }
 
+export async function cancelPendingOrder(orderId, statusPagamento = 'cancelado') {
+  const { supabaseUrl, serviceRoleKey } = getSupabaseAdminConfig()
+  const response = await fetch(`${supabaseUrl}/rest/v1/rpc/cancelar_pedido_pendente`, {
+    method: 'POST',
+    headers: {
+      apikey: serviceRoleKey,
+      Authorization: `Bearer ${serviceRoleKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      p_pedido_id: orderId,
+      p_status: statusPagamento,
+    }),
+  })
+
+  if (!response.ok) {
+    const body = await response.text()
+    throw new Error(`Erro ao cancelar pedido: ${body}`)
+  }
+
+  const result = await response.json()
+  return Boolean(result)
+}
+
+export async function fetchAwaitingOrders() {
+  return (
+    (await supabaseAdminFetch(
+      'pedidos?status_pagamento=eq.aguardando&select=*&order=created_at.asc',
+    )) || []
+  )
+}
+
 export async function releaseOrderNumbers(order) {
   if (!order?.numeros?.length) return
 
   for (const numero of order.numeros) {
-    await supabaseAdminFetch(`rifa_numeros?numero=eq.${numero}`, {
+    await supabaseAdminFetch(`rifa_numeros?numero=eq.${numero}&status=eq.reservado&pedido_id=eq.${order.id}`, {
       method: 'PATCH',
       body: JSON.stringify({
         status: 'disponivel',
@@ -85,10 +117,6 @@ export async function releaseOrderNumbers(order) {
   }
 }
 
-export async function releaseExpiredOrder(orderId) {
-  const order = await fetchOrderById(orderId)
-  if (!order) return
-
-  await updateOrder(orderId, { status_pagamento: 'expirado' })
-  await releaseOrderNumbers(order)
+export async function releaseExpiredOrder(orderId, statusPagamento = 'expirado') {
+  return cancelPendingOrder(orderId, statusPagamento)
 }

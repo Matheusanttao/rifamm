@@ -22,6 +22,7 @@ export type Order = {
   participante_nome: string
   participante_email: string
   participante_telefone: string | null
+  participante_cpf: string | null
   numeros: number[]
   valor_total: number
   status_pagamento: PaymentStatus
@@ -41,6 +42,7 @@ export type CreateOrderInput = {
   participante_nome: string
   participante_email: string
   participante_telefone: string
+  participante_cpf: string
   numeros: number[]
   metodo_pagamento: PaymentMethod
 }

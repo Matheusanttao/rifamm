@@ -1,7 +1,8 @@
 import type { CreateOrderInput, Order, PaymentMethod } from '../types/raffle'
 import type { SiteSettings } from '../types/settings'
+import { isValidCpf, normalizeCpf } from './cpf'
 import { generateOrderCode } from './format'
-import { reserveNumbersLocally } from './numbers'
+import { releaseNumbersLocally, reserveNumbersLocally } from './numbers'
 import { isSupabaseConfigured, supabase } from './supabase'
 
 const ORDERS_KEY = 'rifa_pedidos_demo'
@@ -41,6 +42,11 @@ export async function createOrder(
     throw new Error('Informe o telefone / WhatsApp.')
   }
 
+  const cpf = normalizeCpf(input.participante_cpf)
+  if (!isValidCpf(cpf)) {
+    throw new Error('Informe um CPF válido.')
+  }
+
   const valorTotal = input.numeros.length * settings.valor_numero
   const now = new Date().toISOString()
   const reservaMinutos = Math.max(settings.reserva_minutos || 5, 1)
@@ -54,6 +60,7 @@ export async function createOrder(
       participante_nome: input.participante_nome.trim(),
       participante_email: input.participante_email.trim(),
       participante_telefone: telefone,
+      participante_cpf: cpf,
       numeros: [...input.numeros].sort((a, b) => a - b),
       valor_total: valorTotal,
       status_pagamento: 'aguardando',
@@ -85,6 +92,7 @@ export async function createOrder(
       participante_nome: input.participante_nome.trim(),
       participante_email: input.participante_email.trim(),
       participante_telefone: telefone,
+      participante_cpf: cpf,
       numeros: input.numeros,
       valor_total: valorTotal,
       status_pagamento: 'aguardando',
@@ -174,6 +182,27 @@ export async function searchOrders(codigo: string, email: string): Promise<Order
   return data || []
 }
 
+export async function searchOrdersByCpf(cpf: string): Promise<Order[]> {
+  const normalized = normalizeCpf(cpf)
+  if (!isValidCpf(normalized)) return []
+
+  if (!isSupabaseConfigured) {
+    const orders = await fetchOrders()
+    return orders
+      .filter((order) => order.participante_cpf === normalized)
+      .sort((a, b) => b.created_at.localeCompare(a.created_at))
+  }
+
+  const { data, error } = await supabase
+    .from('pedidos')
+    .select('*')
+    .eq('participante_cpf', normalized)
+    .order('created_at', { ascending: false })
+
+  if (error) throw new Error(error.message)
+  return data || []
+}
+
 async function refreshLocalOrderStatus(order: Order): Promise<Order> {
   return order
 }
@@ -202,21 +231,40 @@ export async function applyPaymentDataToOrder(
     return orders[index]
   }
 
-  const { data, error } = await supabase
-    .from('pedidos')
-    .update({
-      pix_copia_cola: payment.pix_copia_cola,
-      pix_qr_base64: payment.pix_qr_base64,
-      checkout_url: payment.checkout_url,
-      provider_payment_id: payment.provider_payment_id,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', orderId)
-    .select('*')
-    .single()
+  // O PIX/checkout já é gravado pela API (/api/mercadopago/create-payment) com service role.
+  // Anon não tem policy de UPDATE em pedidos — buscar evita "Cannot coerce to single JSON object".
+  return fetchOrder(orderId)
+}
 
-  if (error) throw new Error(error.message)
-  return data
+export async function cancelPendingOrder(orderId: string, settings: SiteSettings): Promise<boolean> {
+  if (!isSupabaseConfigured) {
+    const orders = readLocalOrders()
+    const index = orders.findIndex((item) => item.id === orderId)
+    if (index === -1) return false
+    if (orders[index].status_pagamento !== 'aguardando') return false
+
+    await releaseNumbersLocally(orders[index].numeros, settings)
+    orders[index] = {
+      ...orders[index],
+      status_pagamento: 'cancelado',
+      updated_at: new Date().toISOString(),
+    }
+    writeLocalOrders(orders)
+    return true
+  }
+
+  const response = await fetch('/api/orders/cancel-pending', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ orderId }),
+  })
+
+  const data = await response.json().catch(() => ({}))
+  if (!response.ok) {
+    throw new Error(data.error || 'Não foi possível cancelar o pedido.')
+  }
+
+  return Boolean(data.released)
 }
 
 export function paymentMethodLabel(method: PaymentMethod | null) {
