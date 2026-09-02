@@ -13,7 +13,7 @@ $$;
 -- Configurações do site / rifa
 create table if not exists public.site_settings (
   id int primary key default 1 check (id = 1),
-  titulo_site text not null default 'Rifa do Chá de Panela',
+  titulo_site text not null default 'Rifa do Chá de Casa Nova',
   subtitulo_site text not null default 'Matheus & Melissa',
   texto_hero text not null default '',
   texto_casal text not null default '',

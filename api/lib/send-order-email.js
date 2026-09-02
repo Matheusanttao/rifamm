@@ -36,7 +36,7 @@ export async function sendOrderThankYouEmail(order) {
   const text = [
     `Olá, ${nome}!`,
     '',
-    'Muito obrigado por comprar um número da nossa rifa do chá de panela.',
+    'Muito obrigado por comprar um número da nossa rifa do chá de casa nova.',
     `Seus números: ${numeros}`,
     `Pedido: ${order.codigo}`,
     `Valor: ${valor}`,
@@ -57,7 +57,7 @@ export async function sendOrderThankYouEmail(order) {
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#fffaf6;border:1px solid #ead9ce;border-radius:18px;overflow:hidden;">
           <tr>
             <td style="padding:28px 28px 12px;background:linear-gradient(135deg,#b06b6b,#c98989);color:#fff;">
-              <p style="margin:0;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;opacity:0.9;">Rifa do Chá de Panela</p>
+              <p style="margin:0;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;opacity:0.9;">Rifa do Chá de Casa Nova</p>
               <h1 style="margin:8px 0 0;font-size:28px;font-weight:600;">Matheus &amp; Melissa</h1>
             </td>
           </tr>

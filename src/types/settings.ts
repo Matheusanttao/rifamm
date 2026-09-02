@@ -56,10 +56,10 @@ export type SiteSettingsFormValues = {
 
 export const defaultSiteSettings: SiteSettings = {
   id: 1,
-  titulo_site: 'Rifa do Chá de Panela',
+  titulo_site: 'Rifa do Chá de Casa Nova',
   subtitulo_site: 'Matheus & Melissa',
   texto_hero:
-    'Com muito carinho, convidamos você a participar da nossa rifa especial do chá de panela. Cada número é uma chance de ganhar um prêmio encantador e de fazer parte desse momento tão especial para nós.',
+    'Com muito carinho, convidamos você a participar da nossa rifa especial do chá de casa nova. Cada número é uma chance de ganhar um prêmio encantador e de fazer parte desse momento tão especial para nós.',
   texto_casal:
     'Obrigado por fazer parte da nossa história e por celebrar conosco esse momento tão especial.',
   assinatura_casal: 'Com amor, Matheus & Melissa ♡',

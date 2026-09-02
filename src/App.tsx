@@ -21,7 +21,7 @@ function PublicLayout() {
         <Link className="brand" to="/">
           <span className="brand-text">
             <span className="brand-name">
-              Rifa do Chá <Heart size={16} fill="currentColor" />
+              Rifa do Chá de Casa Nova <Heart size={16} fill="currentColor" />
             </span>
             <span className="brand-sub">Matheus &amp; Melissa</span>
           </span>
@@ -56,7 +56,7 @@ function PublicLayout() {
         <p className="site-footer-thanks">Obrigado por apoiar nosso chá!</p>
         <p className="site-footer-names">Matheus &amp; Melissa</p>
         <p className="site-footer-copy">
-          © 2026 Rifa do Chá de Panela — Matheus &amp; Melissa. Todos os direitos reservados.
+          © 2026 Rifa do Chá de Casa Nova — Matheus &amp; Melissa. Todos os direitos reservados.
         </p>
       </footer>
     </div>

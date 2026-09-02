@@ -47,7 +47,7 @@ export function downloadOrderPdf(order: Order, settings: SiteSettings) {
   setText(doc, [255, 255, 255])
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(16)
-  doc.text(settings.titulo_site || 'Rifa do Chá de Panela', pageW / 2, 26, { align: 'center' })
+  doc.text(settings.titulo_site || 'Rifa do Chá de Casa Nova', pageW / 2, 26, { align: 'center' })
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(10)
   doc.text(settings.subtitulo_site || 'Matheus & Melissa', pageW / 2, 34, { align: 'center' })
