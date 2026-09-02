@@ -14,6 +14,7 @@ export function AdminLayout() {
       setLoading(false)
       return
     }
+    
 
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session)
