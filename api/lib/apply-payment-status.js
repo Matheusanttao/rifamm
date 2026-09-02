@@ -4,7 +4,7 @@ import {
   updateOrder,
 } from './supabase-admin.js'
 import { resolveMercadoPagoStatus } from './mercadopago.js'
-import { sendOrderThankYouEmail } from './send-order-email.js'
+import { sendAdminPurchaseNotification, sendOrderThankYouEmail } from './send-order-email.js'
 
 export async function applyMercadoPagoStatus(order, payment) {
   const status = resolveMercadoPagoStatus(payment)
@@ -19,14 +19,22 @@ export async function applyMercadoPagoStatus(order, payment) {
       pago_em: payment.date_approved || new Date().toISOString(),
     })
 
-    if (firstApproval && !order.email_enviado) {
-      try {
-        const emailResult = await sendOrderThankYouEmail(order)
-        if (emailResult.sent) {
-          await updateOrder(orderId, { email_enviado: true })
+    if (firstApproval) {
+      if (!order.email_enviado) {
+        try {
+          const emailResult = await sendOrderThankYouEmail(order)
+          if (emailResult.sent) {
+            await updateOrder(orderId, { email_enviado: true })
+          }
+        } catch (error) {
+          console.error('Falha ao enviar e-mail de agradecimento:', error)
         }
+      }
+
+      try {
+        await sendAdminPurchaseNotification(order)
       } catch (error) {
-        console.error('Falha ao enviar e-mail de agradecimento:', error)
+        console.error('Falha ao enviar notificação de compra:', error)
       }
     }
 
