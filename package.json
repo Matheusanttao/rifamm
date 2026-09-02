@@ -19,6 +19,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test:email": "node scripts/test-email.mjs",
+    "test:admin-notify": "node scripts/test-admin-notify-unit.mjs",
     "setup": "node scripts/setup-production.mjs"
   },
   "dependencies": {
