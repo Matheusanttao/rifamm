@@ -204,7 +204,21 @@ export function RaffleSettingsForm({ settings, onSubmit }: RaffleSettingsFormPro
                 onChange={(e) => setField('valor_numero', Number(e.target.value))}
               />
             </label>
+            <label>
+              Tempo para pagar (minutos)
+              <input
+                type="number"
+                min={5}
+                max={120}
+                value={values.reserva_minutos}
+                onChange={(e) => setField('reserva_minutos', Number(e.target.value))}
+              />
+            </label>
           </div>
+          <p className="muted">
+            Tempo que os números ficam reservados aguardando o pagamento PIX. Depois disso, voltam
+            para a grade.
+          </p>
         </fieldset>
 
         <fieldset>

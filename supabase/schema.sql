@@ -31,7 +31,7 @@ create table if not exists public.site_settings (
   data_sorteio date,
   total_numeros int not null default 200 check (total_numeros between 10 and 10000),
   valor_numero numeric(12, 2) not null default 15 check (valor_numero > 0),
-  reserva_minutos int not null default 5 check (reserva_minutos between 5 and 120),
+  reserva_minutos int not null default 15 check (reserva_minutos between 5 and 120),
   hero_imagem_url text,
   pagamento_habilitado boolean not null default false,
   pix_chave text,
