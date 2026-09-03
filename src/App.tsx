@@ -4,6 +4,7 @@ import { DemoBanner } from './components/DemoBanner'
 import { AdminLayout } from './layouts/AdminLayout'
 import { SiteProvider, useSite } from './lib/site-context'
 import { AdminDashboard } from './pages/AdminDashboard'
+import { AdminExport } from './pages/AdminExport'
 import { AdminLogin } from './pages/AdminLogin'
 import { AdminOrders } from './pages/AdminOrders'
 import { AdminSettings } from './pages/AdminSettings'
@@ -83,6 +84,7 @@ function App() {
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<AdminDashboard />} />
         <Route path="pedidos" element={<AdminOrders />} />
+        <Route path="exportar" element={<AdminExport />} />
         <Route path="configuracoes" element={<AdminSettings />} />
       </Route>
     </Routes>

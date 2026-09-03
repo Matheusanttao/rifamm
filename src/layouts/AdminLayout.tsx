@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { LayoutDashboard, LogOut, Settings, ShoppingBag, Ticket } from 'lucide-react'
+import { FileSpreadsheet, LayoutDashboard, LogOut, Settings, ShoppingBag, Ticket } from 'lucide-react'
 import { Link, NavLink, Navigate, Outlet, useNavigate } from 'react-router-dom'
 import type { Session } from '@supabase/supabase-js'
 import { isSupabaseConfigured, supabase } from '../lib/supabase'
@@ -56,6 +56,9 @@ export function AdminLayout() {
           </NavLink>
           <NavLink to="/admin/pedidos">
             <ShoppingBag size={18} /> Pedidos
+          </NavLink>
+          <NavLink to="/admin/exportar">
+            <FileSpreadsheet size={18} /> Exportar Excel
           </NavLink>
           <NavLink to="/admin/configuracoes">
             <Settings size={18} /> Configurações
