@@ -6,11 +6,12 @@ function remainingMs(reservadoAte: string | null): number {
 }
 
 export function formatCountdown(ms: number): string {
-  if (ms <= 0) return '00:00'
+  if (ms <= 0) return '00:00:00'
   const totalSec = Math.ceil(ms / 1000)
-  const min = Math.floor(totalSec / 60)
+  const hours = Math.floor(totalSec / 3600)
+  const min = Math.floor((totalSec % 3600) / 60)
   const sec = totalSec % 60
-  return `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`
+  return `${String(hours).padStart(2, '0')}:${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`
 }
 
 export function isReservationExpired(reservadoAte: string | null): boolean {
@@ -37,6 +38,6 @@ export function useReservationCountdown(reservadoAte: string | null, active: boo
     remainingMs: ms,
     expired: ms <= 0,
     formatted: formatCountdown(ms),
-    urgent: ms > 0 && ms <= 60_000,
+    urgent: ms > 0 && ms <= 60 * 60_000, // último 1h
   }
 }

@@ -20,7 +20,7 @@ type PaymentStatusPanelProps = {
 const statusCopy: Record<Order['status_pagamento'], { title: string; text: string; icon: typeof Clock3 }> = {
   aguardando: {
     title: 'Aguardando pagamento',
-    text: 'Seus números estão reservados. Conclua o pagamento no prazo para confirmar a participação.',
+    text: 'Seus números estão reservados. Pague o PIX e aguarde a confirmação do banco — assim que for aprovado, sua participação é confirmada.',
     icon: Clock3,
   },
   aprovado: {
@@ -34,8 +34,8 @@ const statusCopy: Record<Order['status_pagamento'], { title: string; text: strin
     icon: XCircle,
   },
   expirado: {
-    title: 'Reserva expirada',
-    text: 'O prazo para pagamento terminou e os números foram liberados. Faça um novo pedido para participar novamente.',
+    title: 'Pagamento não confirmado',
+    text: 'Não recebemos a confirmação do pagamento dentro do prazo. Os números foram liberados. Faça um novo pedido para participar novamente.',
     icon: AlertCircle,
   },
   cancelado: {
@@ -51,9 +51,18 @@ export function PaymentStatusPanel({ order, onReservationExpire }: PaymentStatus
   const Icon = copy.icon
   const showCountdown =
     order.status_pagamento === 'aguardando' && Boolean(order.reservado_ate)
+  const horas = Math.round((settings.reserva_minutos || 1440) / 60)
+  const prazoLabel =
+    horas >= 24 && horas % 24 === 0
+      ? horas === 24
+        ? '24 horas'
+        : `${horas / 24} dias`
+      : horas === 1
+        ? '1 hora'
+        : `${horas} horas`
   const aguardandoText =
     order.status_pagamento === 'aguardando'
-      ? `Seus números estão reservados por ${settings.reserva_minutos} minutos. Use o cronômetro abaixo e conclua o pagamento nesse prazo.`
+      ? `Seus números estão reservados. Pague o PIX quando puder — a confirmação vem do banco. Se não houver confirmação em até ${prazoLabel}, a reserva expira.`
       : copy.text
 
   return (
@@ -94,7 +103,7 @@ export function PaymentStatusPanel({ order, onReservationExpire }: PaymentStatus
         ) : null}
         {order.status_pagamento === 'aguardando' && order.reservado_ate ? (
           <div>
-            <span>Reserva até</span>
+            <span>Prazo até</span>
             <strong>{formatDateTime(order.reservado_ate)}</strong>
           </div>
         ) : null}

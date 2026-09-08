@@ -74,13 +74,19 @@ export function resolveMercadoPagoStatus(payment) {
   return 'aguardando'
 }
 
-function pixExpirationDate(minutes = 30) {
+function pixExpirationDate(minutes = 1440) {
   return new Date(Date.now() + minutes * 60 * 1000).toISOString()
 }
 
 export async function createPixPayment({ order, baseUrl, idempotencyKey }) {
   const payer = splitName(order.participante_nome)
   const identification = payerIdentification(order)
+
+  // Alinha expiração do PIX com a reserva do pedido (padrão: 24h)
+  const expiration =
+    order.reservado_ate && new Date(order.reservado_ate).getTime() > Date.now()
+      ? new Date(order.reservado_ate).toISOString()
+      : pixExpirationDate(1440)
 
   const payment = await mpFetch('/v1/payments', {
     method: 'POST',
@@ -92,7 +98,7 @@ export async function createPixPayment({ order, baseUrl, idempotencyKey }) {
       description: `Rifa ${order.codigo} — ${order.numeros.length} número(s)`,
       payment_method_id: 'pix',
       external_reference: order.id,
-      date_of_expiration: pixExpirationDate(30),
+      date_of_expiration: expiration,
       payer: {
         email: order.participante_email,
         first_name: payer.first_name,

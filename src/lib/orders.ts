@@ -49,7 +49,7 @@ export async function createOrder(
 
   const valorTotal = input.numeros.length * settings.valor_numero
   const now = new Date().toISOString()
-  const reservaMinutos = Math.max(settings.reserva_minutos || 5, 1)
+  const reservaMinutos = Math.max(settings.reserva_minutos || 1440, 15)
   const reservadoAte = new Date(Date.now() + reservaMinutos * 60 * 1000).toISOString()
 
   if (!isSupabaseConfigured) {

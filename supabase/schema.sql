@@ -31,7 +31,7 @@ create table if not exists public.site_settings (
   data_sorteio date,
   total_numeros int not null default 200 check (total_numeros between 10 and 10000),
   valor_numero numeric(12, 2) not null default 15 check (valor_numero > 0),
-  reserva_minutos int not null default 15 check (reserva_minutos between 5 and 120),
+  reserva_minutos int not null default 1440 check (reserva_minutos between 15 and 10080),
   hero_imagem_url text,
   pagamento_habilitado boolean not null default false,
   pix_chave text,
@@ -184,7 +184,7 @@ grant execute on function public.liberar_reservas_expiradas() to anon, authentic
 create or replace function public.reservar_numeros(
   p_pedido_id uuid,
   p_numeros int[],
-  p_reserva_minutos int default 5
+  p_reserva_minutos int default 1440
 )
 returns table (sucesso boolean, mensagem text)
 language plpgsql
@@ -201,7 +201,7 @@ begin
     return;
   end if;
 
-  v_minutos := greatest(coalesce(p_reserva_minutos, 5), 1);
+  v_minutos := greatest(coalesce(p_reserva_minutos, 1440), 15);
   v_expira := now() + (v_minutos * interval '1 minute');
 
   foreach v_numero in array p_numeros loop

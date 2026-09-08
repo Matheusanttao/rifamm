@@ -208,16 +208,17 @@ export function RaffleSettingsForm({ settings, onSubmit }: RaffleSettingsFormPro
               Tempo para pagar (minutos)
               <input
                 type="number"
-                min={5}
-                max={120}
+                min={15}
+                max={10080}
                 value={values.reserva_minutos}
                 onChange={(e) => setField('reserva_minutos', Number(e.target.value))}
               />
             </label>
           </div>
           <p className="muted">
-            Tempo que os números ficam reservados aguardando o pagamento PIX. Depois disso, voltam
-            para a grade.
+            Tempo que os números ficam reservados aguardando confirmação do PIX. Use 1440 para 24
+            horas. Se o banco confirmar o pagamento, o pedido é aprovado; se não houver resposta
+            nesse prazo, expira.
           </p>
         </fieldset>
 

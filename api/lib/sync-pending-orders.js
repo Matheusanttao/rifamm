@@ -5,8 +5,8 @@ import {
   fetchAwaitingOrders,
 } from './supabase-admin.js'
 
-export const PIX_RESERVATION_MINUTES = 30
-export const STALE_MINUTES_WITHOUT_PAYMENT = 30
+export const PIX_RESERVATION_MINUTES = 1440 // 24 horas
+export const STALE_MINUTES_WITHOUT_PAYMENT = 1440
 export const STALE_HOURS_CARD = 48
 
 function isPixPaymentId(providerPaymentId) {
@@ -53,7 +53,7 @@ export async function syncPendingOrders() {
       const payment = await fetchMercadoPagoPayment(order.provider_payment_id)
       const resolvedStatus = resolveMercadoPagoStatus(payment)
 
-      if (resolvedStatus === 'aguardando' && minutesSince(order.created_at) >= PIX_RESERVATION_MINUTES + 5) {
+      if (resolvedStatus === 'aguardando' && minutesSince(order.created_at) >= PIX_RESERVATION_MINUTES) {
         const released = await cancelPendingOrder(order.id, 'expirado')
         if (released) summary.released += 1
         continue

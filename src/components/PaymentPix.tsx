@@ -105,8 +105,8 @@ export function PaymentPix({ order, settings, loading }: PaymentPixProps) {
 
       <p className="payment-note">
         <CreditCard size={14} />
-        O pagamento só será confirmado após validação no Mercado Pago. Se você não pagar em até{' '}
-        {settings.reserva_minutos} minutos, os números voltam a ficar disponíveis para outras pessoas.
+        O pagamento só é confirmado quando o banco/Mercado Pago aprovar o PIX. Se não houver
+        confirmação em até 24 horas, os números voltam a ficar disponíveis.
       </p>
     </div>
   )
