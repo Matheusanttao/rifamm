@@ -46,6 +46,9 @@ export function Home() {
         <div className="home-hero-scrim" aria-hidden="true" />
 
         <div className="container home-hero-content">
+          <p className="home-demo-notice home-anim" style={{ '--d': '40ms' } as CSSProperties} role="status">
+            Este site é somente de demonstração e sem fins lucrativos
+          </p>
           <p className="home-hero-brand home-anim" style={{ '--d': '80ms' } as CSSProperties}>
             {settings.subtitulo_site}
           </p>

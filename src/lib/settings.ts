@@ -1,5 +1,5 @@
 import { defaultSiteSettings, type SiteSettings, type SiteSettingsFormValues } from '../types/settings'
-import { isSupabaseConfigured, supabase } from './supabase'
+import { isDemoMode, isSupabaseConfigured, supabase } from './supabase'
 
 const STORAGE_KEY = 'rifa_site_settings'
 
@@ -26,7 +26,7 @@ function toSettings(values: SiteSettingsFormValues): SiteSettings {
     valor_numero: values.valor_numero,
     reserva_minutos: values.reserva_minutos,
     hero_imagem_url: values.hero_imagem_url.trim() || null,
-    pagamento_habilitado: values.pagamento_habilitado,
+    pagamento_habilitado: isDemoMode ? false : values.pagamento_habilitado,
     pix_chave: values.pix_chave.trim() || null,
     pix_titular: values.pix_titular.trim() || null,
     pix_mensagem: values.pix_mensagem.trim() || null,
@@ -35,17 +35,15 @@ function toSettings(values: SiteSettingsFormValues): SiteSettings {
 }
 
 function readLocalSettings(): SiteSettings {
+  if (isDemoMode) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultSiteSettings))
+    return { ...defaultSiteSettings, pagamento_habilitado: false }
+  }
+
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return defaultSiteSettings
     const parsed = JSON.parse(raw) as Partial<SiteSettings>
-    const looksLikeOldPersonalDemo =
-      parsed.subtitulo_site === 'Matheus & Melissa' ||
-      /matheus-melissa\.(png|jpg|jpeg|webp)$/i.test(parsed.hero_imagem_url || '')
-    if (looksLikeOldPersonalDemo) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultSiteSettings))
-      return defaultSiteSettings
-    }
     return { ...defaultSiteSettings, ...parsed }
   } catch {
     return defaultSiteSettings
@@ -88,7 +86,7 @@ export function settingsToFormValues(settings: SiteSettings): SiteSettingsFormVa
 }
 
 export async function fetchSiteSettings(): Promise<SiteSettings> {
-  if (!isSupabaseConfigured) return readLocalSettings()
+  if (isDemoMode || !isSupabaseConfigured) return readLocalSettings()
 
   const { data, error } = await supabase.from('site_settings').select('*').eq('id', 1).maybeSingle()
   if (error) throw new Error(error.message)
@@ -96,10 +94,9 @@ export async function fetchSiteSettings(): Promise<SiteSettings> {
 }
 
 export async function saveSiteSettings(values: SiteSettingsFormValues): Promise<SiteSettings> {
+  if (isDemoMode || !isSupabaseConfigured) return writeLocalSettings(values)
+
   const payload = toSettings(values)
-
-  if (!isSupabaseConfigured) return writeLocalSettings(values)
-
   const { data, error } = await supabase
     .from('site_settings')
     .upsert(payload, { onConflict: 'id' })

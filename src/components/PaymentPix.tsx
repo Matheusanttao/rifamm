@@ -56,11 +56,13 @@ export function PaymentPix({ order, settings, loading }: PaymentPixProps) {
         <h3>Pagamento via PIX — Mercado Pago</h3>
       </div>
 
-      {!settings.pagamento_habilitado ? (
-        <p className="demo-payment-note">
-          No modo demonstrativo, o QR Code e o código abaixo são apenas ilustrativos.
+      <div className="demo-payment-note" role="status">
+        <strong>Atenção: este site é somente de demonstração e sem fins lucrativos.</strong>
+        <p>
+          Não realize nenhum pagamento. O QR Code e o código abaixo são apenas ilustrativos — não há
+          cobrança nem arrecadação real.
         </p>
-      ) : null}
+      </div>
 
       <div className="pix-qr-wrap">
         <img

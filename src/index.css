@@ -2530,12 +2530,29 @@ textarea:focus {
 }
 
 .demo-payment-note {
-  padding: 0.75rem 0.9rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid #edd9c4;
   border-radius: 12px;
   background: #fff4e8;
   color: #7a5a3d;
   font-size: 0.9rem;
   line-height: 1.5;
+}
+
+.demo-payment-note strong {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.demo-payment-note p {
+  margin: 0;
+}
+
+.demo-payment-note-strong {
+  border-color: #e0b089;
+  background: #ffe8d2;
+  color: #6a3f1f;
+  font-size: 0.95rem;
 }
 
 .pix-qr-wrap {
@@ -2946,6 +2963,23 @@ textarea:focus {
   justify-content: flex-end;
   width: min(1200px, calc(100% - 48px));
   padding: clamp(2.4rem, 6vw, 4.5rem) 0 clamp(2.8rem, 6vw, 4.8rem);
+}
+
+.home-demo-notice {
+  display: inline-flex;
+  max-width: 36rem;
+  margin: 0 0 1rem;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  background: rgba(40, 24, 22, 0.72);
+  color: #fffdfb;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.35;
+  text-wrap: balance;
+  backdrop-filter: blur(8px);
 }
 
 .home-hero-brand {

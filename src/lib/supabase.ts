@@ -5,7 +5,10 @@ import type { SiteSettings } from '../types/settings'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey)
+/** Demo offline: nunca conecta no banco. Desligue para usar Supabase de verdade. */
+export const isDemoMode = import.meta.env.VITE_DEMO_MODE !== 'false'
+
+export const isSupabaseConfigured = !isDemoMode && Boolean(supabaseUrl && supabaseAnonKey)
 
 export type Database = {
   public: {
@@ -24,7 +27,8 @@ export type Database = {
       }
       pedidos: {
         Row: Order
-        Insert: Partial<Order> & Pick<Order, 'participante_nome' | 'participante_email' | 'participante_cpf' | 'numeros' | 'valor_total'>
+        Insert: Partial<Order> &
+          Pick<Order, 'participante_nome' | 'participante_email' | 'participante_cpf' | 'numeros' | 'valor_total'>
         Update: Partial<Omit<Order, 'id' | 'created_at'>>
         Relationships: []
       }

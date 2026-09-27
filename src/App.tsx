@@ -46,7 +46,7 @@ function PublicLayout() {
         </div>
       </header>
 
-      <DemoBanner pagamentoHabilitado={settings.pagamento_habilitado} />
+      <DemoBanner />
 
       <Outlet />
 
@@ -57,8 +57,8 @@ function PublicLayout() {
         <p className="site-footer-thanks">Obrigado por explorar esta demonstração!</p>
         <p className="site-footer-names">{settings.subtitulo_site}</p>
         <p className="site-footer-demo">
-          Versão de demonstração sem fins lucrativos. Conteúdo fictício apenas para exibição do
-          sistema.
+          Este site é somente de demonstração e sem fins lucrativos. Não há cobrança, venda nem
+          arrecadação real.
         </p>
         <p className="site-footer-copy">
           © 2026 {settings.titulo_site} — {settings.subtitulo_site}. Todos os direitos reservados.

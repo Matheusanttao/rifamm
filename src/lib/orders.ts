@@ -16,7 +16,16 @@ function emptyPaymentFields() {
   }
 }
 
-function readLocalOrders(): Order[] {
+/** Pedido de exemplo para consulta por CPF na demo offline. */
+export const DEMO_TEST_CPF = '52998224725'
+export const DEMO_TEST_PARTICIPANT = {
+  nome: 'João da Silva Teste',
+  email: 'teste@exemplo.com',
+  telefone: '(11) 98888-7777',
+  cpf: '529.982.247-25',
+}
+
+function loadLocalOrdersRaw(): Order[] {
   try {
     const raw = localStorage.getItem(ORDERS_KEY)
     return raw ? (JSON.parse(raw) as Order[]) : []
@@ -29,8 +38,41 @@ function writeLocalOrders(orders: Order[]) {
   localStorage.setItem(ORDERS_KEY, JSON.stringify(orders))
 }
 
+function ensureDemoSeedOrders() {
+  const existing = loadLocalOrdersRaw()
+  if (existing.some((order) => order.participante_cpf === DEMO_TEST_CPF)) return
+
+  const now = new Date().toISOString()
+  const seed: Order = {
+    id: 'demo-seed-order',
+    codigo: 'DEMO-TESTE',
+    participante_nome: DEMO_TEST_PARTICIPANT.nome,
+    participante_email: DEMO_TEST_PARTICIPANT.email,
+    participante_telefone: '11988887777',
+    participante_cpf: DEMO_TEST_CPF,
+    numeros: [3, 15, 28],
+    valor_total: 45,
+    status_pagamento: 'pago',
+    metodo_pagamento: 'pix',
+    ...emptyPaymentFields(),
+    pix_copia_cola: 'DEMO-PIX-SEED-SEM-VALOR-REAL',
+    reservado_ate: null,
+    pago_em: now,
+    email_enviado: false,
+    created_at: now,
+    updated_at: now,
+  }
+
+  writeLocalOrders([seed, ...existing])
+}
+
+function readLocalOrders(): Order[] {
+  ensureDemoSeedOrders()
+  return loadLocalOrdersRaw()
+}
+
 function buildDemoPixCode(order: Order) {
-  return `DEMO-PIX-${order.codigo}-VALOR-${order.valor_total.toFixed(2)}-RIFA-MATHEUS-MELISSA`
+  return `DEMO-PIX-${order.codigo}-VALOR-${order.valor_total.toFixed(2)}-RIFA-LUCAS-SOFIA-SEM-VALOR-REAL`
 }
 
 export async function createOrder(

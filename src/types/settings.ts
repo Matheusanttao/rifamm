@@ -59,7 +59,7 @@ export const defaultSiteSettings: SiteSettings = {
   titulo_site: 'Rifa do Chá de Casa Nova',
   subtitulo_site: 'Lucas & Sofia',
   texto_hero:
-    'Versão de demonstração — sem fins lucrativos. Com muito carinho, convidamos você a explorar esta rifa especial do chá de casa nova. Cada número é uma chance de ganhar um prêmio e de celebrar esse momento conosco.',
+    'Este site é somente de demonstração e sem fins lucrativos. Explore esta rifa especial do chá de casa nova — nomes e dados são fictícios, sem cobrança real.',
   texto_casal:
     'Obrigado por explorar esta demonstração e por celebrar conosco esse momento especial.',
   assinatura_casal: 'Com carinho, Lucas & Sofia ♡',
@@ -76,7 +76,7 @@ export const defaultSiteSettings: SiteSettings = {
   premio_3_imagem_url:
     'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=900&q=80',
   regulamento:
-    '1. Cada número custa o valor informado no site.\n2. O sorteio será realizado na data indicada.\n3. O ganhador será contatado pelos dados informados no pedido.\n4. Números só são confirmados após a validação do pagamento.\n5. Ao iniciar o pedido, os números ficam reservados por 24 horas. Sem pagamento nesse prazo, a reserva expira e os números voltam para a grade.\n6. Esta é uma versão de demonstração, sem fins lucrativos e sem processamento de pagamento real.',
+    '1. Cada número custa o valor informado no site.\n2. O sorteio será realizado na data indicada.\n3. O ganhador será contatado pelos dados informados no pedido.\n4. Números só são confirmados após a validação do pagamento.\n5. Ao iniciar o pedido, os números ficam reservados por 24 horas. Sem pagamento nesse prazo, a reserva expira e os números voltam para a grade.\n6. Este site é somente de demonstração e sem fins lucrativos: não há cobrança, venda nem arrecadação real.',
   data_sorteio: '2026-09-15',
   total_numeros: 200,
   valor_numero: 15,

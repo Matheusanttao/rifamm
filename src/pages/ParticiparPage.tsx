@@ -14,9 +14,14 @@ import {
   normalizePhone,
 } from '../lib/form-masks'
 import { initMercadoPagoPayment } from '../lib/mercadopago'
-import { applyPaymentDataToOrder, cancelPendingOrder, createOrder } from '../lib/orders'
+import {
+  applyPaymentDataToOrder,
+  cancelPendingOrder,
+  createOrder,
+  DEMO_TEST_PARTICIPANT,
+} from '../lib/orders'
 import { useSite } from '../lib/site-context'
-import { isSupabaseConfigured } from '../lib/supabase'
+import { isDemoMode, isSupabaseConfigured } from '../lib/supabase'
 import type { PaymentMethod } from '../types/raffle'
 
 type Step = 'numeros' | 'dados' | 'pagamento'
@@ -29,10 +34,10 @@ export function ParticiparPage() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
-  const [nome, setNome] = useState('')
-  const [email, setEmail] = useState('')
-  const [telefone, setTelefone] = useState('')
-  const [cpf, setCpf] = useState('')
+  const [nome, setNome] = useState(isDemoMode ? DEMO_TEST_PARTICIPANT.nome : '')
+  const [email, setEmail] = useState(isDemoMode ? DEMO_TEST_PARTICIPANT.email : '')
+  const [telefone, setTelefone] = useState(isDemoMode ? DEMO_TEST_PARTICIPANT.telefone : '')
+  const [cpf, setCpf] = useState(isDemoMode ? DEMO_TEST_PARTICIPANT.cpf : '')
   const metodo: PaymentMethod = 'pix'
 
   const cpfValido = isValidCpf(cpf)
@@ -158,6 +163,11 @@ export function ParticiparPage() {
                   handleContinueToPayment()
                 }}
               >
+                {isDemoMode ? (
+                  <p className="demo-payment-note" role="status">
+                    Dados de teste já preenchidos. Nada é salvo em banco — só neste navegador.
+                  </p>
+                ) : null}
                 <label>
                   Nome completo
                   <input
@@ -229,34 +239,28 @@ export function ParticiparPage() {
 
             {step === 'pagamento' ? (
               <form className="stacked-form" onSubmit={handleCreateOrder}>
+                <div className="demo-payment-note demo-payment-note-strong" role="alert">
+                  <strong>Pare: este site é somente de demonstração e sem fins lucrativos.</strong>
+                  <p>
+                    Não pague nada. Não há cobrança, venda nem arrecadação real. Os dados abaixo são
+                    de teste e o PIX gerado é só uma simulação — nenhum valor será transferido.
+                  </p>
+                </div>
+
                 <div className="payment-method-picker">
                   <div className="payment-method-option active">
-                    <QrCode size={18} /> PIX
+                    <QrCode size={18} /> PIX (simulado)
                   </div>
                 </div>
 
                 <p className="muted">
-                  Após confirmar, você verá o QR Code e o código PIX gerados pelo Mercado Pago.
+                  Ao continuar, o pedido de teste fica salvo só neste navegador (sem banco de dados).
                 </p>
-
-                {!settings.pagamento_habilitado ? (
-                  <p className="demo-payment-note">
-                    Modo demonstrativo: o pedido será criado e os números ficarão reservados, mas nenhuma
-                    cobrança real será processada.
-                  </p>
-                ) : !isSupabaseConfigured ? (
-                  <p className="demo-payment-note">
-                    Para pagamentos reais, configure o Supabase e as variáveis do Mercado Pago na
-                    Vercel.
-                  </p>
-                ) : null}
 
                 {error ? <p className="form-error">{error}</p> : null}
 
                 <button className="button primary large" type="submit" disabled={submitting}>
-                  {submitting
-                    ? 'Processando...'
-                    : 'Confirmar e ir para pagamento'}
+                  {submitting ? 'Processando...' : 'Continuar na demonstração (sem pagar)'}
                 </button>
               </form>
             ) : null}

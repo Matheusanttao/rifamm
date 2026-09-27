@@ -3,6 +3,8 @@ import { ArrowRight, Search, Ticket } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { StatusBadge } from '../components/StatusBadge'
 import { formatCpf, isValidCpf, normalizeCpf } from '../lib/cpf'
+import { DEMO_TEST_PARTICIPANT } from '../lib/orders'
+import { isDemoMode } from '../lib/supabase'
 import { formatCurrency, formatDateTime, formatNumbersList } from '../lib/format'
 import { paymentMethodLabel, searchOrdersByCpf } from '../lib/orders'
 import type { Order } from '../types/raffle'
@@ -78,6 +80,12 @@ export function MeusNumerosPage() {
           <p className="muted">
             Digite seu CPF para ver todos os números da sua participação na rifa.
           </p>
+          {isDemoMode ? (
+            <p className="demo-payment-note" role="status">
+              Demo: teste com o CPF <strong>{DEMO_TEST_PARTICIPANT.cpf}</strong> (pedido fictício
+              local, sem banco).
+            </p>
+          ) : null}
 
           <form className="stacked-form buscar-form" onSubmit={handleSubmit}>
             <label>
@@ -88,7 +96,7 @@ export function MeusNumerosPage() {
                 autoComplete="off"
                 value={cpf}
                 onChange={(e) => setCpf(formatCpf(e.target.value))}
-                placeholder="000.000.000-00"
+                placeholder={isDemoMode ? DEMO_TEST_PARTICIPANT.cpf : '000.000.000-00'}
                 maxLength={14}
                 required
               />
