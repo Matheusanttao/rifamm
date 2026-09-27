@@ -50,7 +50,7 @@ export function downloadOrderPdf(order: Order, settings: SiteSettings) {
   doc.text(settings.titulo_site || 'Rifa do Chá de Casa Nova', pageW / 2, 26, { align: 'center' })
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(10)
-  doc.text(settings.subtitulo_site || 'Matheus & Melissa', pageW / 2, 34, { align: 'center' })
+  doc.text(settings.subtitulo_site || 'Lucas & Sofia', pageW / 2, 34, { align: 'center' })
 
   let y = 54
   setFill(doc, COLORS.white)
@@ -123,7 +123,7 @@ export function downloadOrderPdf(order: Order, settings: SiteSettings) {
   doc.text('Obrigado por apoiar nosso chá!', pageW / 2, y + 10, { align: 'center' })
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(12)
-  doc.text(settings.assinatura_casal?.replace(/♡/g, '').trim() || 'Matheus & Melissa', pageW / 2, y + 18, {
+  doc.text(settings.assinatura_casal?.replace(/♡/g, '').trim() || 'Lucas & Sofia', pageW / 2, y + 18, {
     align: 'center',
   })
 

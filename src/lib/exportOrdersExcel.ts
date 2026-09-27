@@ -90,7 +90,7 @@ export async function downloadOrdersExcel(
   // Subtitle
   sheet.mergeCells('A2:L2')
   const subtitle = sheet.getCell('A2')
-  subtitle.value = `${settings.subtitulo_site || 'Matheus & Melissa'}  ·  Exportado em ${formatDateTime(new Date().toISOString())}`
+  subtitle.value = `${settings.subtitulo_site || 'Lucas & Sofia'}  ·  Exportado em ${formatDateTime(new Date().toISOString())}`
   subtitle.font = { name: 'Calibri', size: 11, color: { argb: `FF${ROSE_DEEP}` } }
   subtitle.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${CREAM}` } }
   subtitle.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 }

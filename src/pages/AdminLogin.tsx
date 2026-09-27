@@ -39,7 +39,7 @@ export function AdminLogin() {
           <Heart size={28} />
         </div>
         <p className="eyebrow">Painel administrativo</p>
-        <h1>Rifa — Matheus & Melissa</h1>
+        <h1>Rifa — Lucas & Sofia (Demo)</h1>
         <p className="muted">Use o usuário criado no Supabase Auth para gerenciar a rifa.</p>
 
         <form className="stacked-form" onSubmit={handleSubmit}>

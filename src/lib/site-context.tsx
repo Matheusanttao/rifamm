@@ -39,13 +39,7 @@ function preloadImage(src: string) {
 }
 
 function resolveHeroUrl(settings: SiteSettings) {
-  if (
-    settings.hero_imagem_url &&
-    !/matheus-melissa\.(png|jpg|jpeg|webp)$/i.test(settings.hero_imagem_url)
-  ) {
-    return settings.hero_imagem_url
-  }
-  return '/matheus-melissa.jpg'
+  return settings.hero_imagem_url?.trim() || '/casal-demo-hero.png'
 }
 
 export function SiteProvider({ children }: { children: ReactNode }) {
@@ -123,7 +117,7 @@ export function SiteProvider({ children }: { children: ReactNode }) {
             <Heart size={22} fill="currentColor" />
           </span>
           <div className="site-boot-spinner" aria-hidden="true" />
-          <p className="site-boot-brand">Matheus &amp; Melissa</p>
+          <p className="site-boot-brand">Lucas &amp; Sofia</p>
           <p className="site-boot-text">Carregando a rifa...</p>
         </div>
       </div>

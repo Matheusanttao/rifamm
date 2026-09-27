@@ -38,7 +38,15 @@ function readLocalSettings(): SiteSettings {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return defaultSiteSettings
-    return { ...defaultSiteSettings, ...JSON.parse(raw) }
+    const parsed = JSON.parse(raw) as Partial<SiteSettings>
+    const looksLikeOldPersonalDemo =
+      parsed.subtitulo_site === 'Matheus & Melissa' ||
+      /matheus-melissa\.(png|jpg|jpeg|webp)$/i.test(parsed.hero_imagem_url || '')
+    if (looksLikeOldPersonalDemo) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultSiteSettings))
+      return defaultSiteSettings
+    }
+    return { ...defaultSiteSettings, ...parsed }
   } catch {
     return defaultSiteSettings
   }

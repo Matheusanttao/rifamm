@@ -19,7 +19,7 @@ import { useSite } from '../lib/site-context'
 import { formatCurrency, formatDate } from '../lib/format'
 import { defaultSiteSettings } from '../types/settings'
 
-const COUPLE_IMAGE = '/matheus-melissa.jpg'
+const COUPLE_IMAGE = '/casal-demo-hero.png'
 
 export function Home() {
   const { settings, numbers } = useSite()
@@ -34,10 +34,7 @@ export function Home() {
 
   const stats = useMemo(() => getNumberStats(numbers), [numbers])
   const regulamentoLines = settings.regulamento.split('\n').filter(Boolean)
-  const heroImage =
-    settings.hero_imagem_url && !/matheus-melissa\.(png|jpg|jpeg|webp)$/i.test(settings.hero_imagem_url)
-      ? settings.hero_imagem_url
-      : COUPLE_IMAGE
+  const heroImage = settings.hero_imagem_url?.trim() || COUPLE_IMAGE
   const drawDate = settings.data_sorteio ? formatDate(settings.data_sorteio) : '—'
 
   return (

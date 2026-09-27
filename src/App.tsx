@@ -22,9 +22,9 @@ function PublicLayout() {
         <Link className="brand" to="/">
           <span className="brand-text">
             <span className="brand-name">
-              Rifa do Chá de Casa Nova <Heart size={16} fill="currentColor" />
+              {settings.titulo_site} <Heart size={16} fill="currentColor" />
             </span>
-            <span className="brand-sub">Matheus &amp; Melissa</span>
+            <span className="brand-sub">{settings.subtitulo_site}</span>
           </span>
         </Link>
 
@@ -54,10 +54,14 @@ function PublicLayout() {
         <div className="site-footer-heart" aria-hidden="true">
           <Heart size={22} fill="currentColor" />
         </div>
-        <p className="site-footer-thanks">Obrigado por apoiar nosso chá!</p>
-        <p className="site-footer-names">Matheus &amp; Melissa</p>
+        <p className="site-footer-thanks">Obrigado por explorar esta demonstração!</p>
+        <p className="site-footer-names">{settings.subtitulo_site}</p>
+        <p className="site-footer-demo">
+          Versão de demonstração sem fins lucrativos. Conteúdo fictício apenas para exibição do
+          sistema.
+        </p>
         <p className="site-footer-copy">
-          © 2026 Rifa do Chá de Casa Nova — Matheus &amp; Melissa. Todos os direitos reservados.
+          © 2026 {settings.titulo_site} — {settings.subtitulo_site}. Todos os direitos reservados.
         </p>
       </footer>
     </div>

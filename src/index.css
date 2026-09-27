@@ -1024,6 +1024,15 @@ h3 {
   letter-spacing: -0.02em;
 }
 
+.site-footer-demo {
+  margin: 0.85rem auto 0;
+  max-width: 36rem;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
 .site-footer-copy {
   margin-top: 1.35rem;
   color: rgba(255, 255, 255, 0.62);

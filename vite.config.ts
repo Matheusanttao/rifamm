@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => {
             .replaceAll('%SITE_URL%', siteUrl)
             .replace(
               '%OG_IMAGE%',
-              siteUrl ? `${siteUrl}/matheus-melissa.jpg` : '/matheus-melissa.jpg',
+              siteUrl ? `${siteUrl}/casal-demo-hero.png` : '/casal-demo-hero.png',
             )
         },
       },

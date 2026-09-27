@@ -2,14 +2,11 @@
  * Envia e-mail de agradecimento via Resend (plano gratuito).
  * Configure RESEND_API_KEY e EMAIL_FROM na Vercel.
  * Teste rápido: from = "Rifa <onboarding@resend.dev>" (só envia para o e-mail da sua conta Resend).
- * Produção: verifique um domínio no Resend e use EMAIL_FROM=Rifa Matheus & Melissa <ola@seudominio.com>
+ * Produção: verifique um domínio no Resend e use EMAIL_FROM=Rifa Lucas & Sofia <ola@seudominio.com>
  *
  * EMAIL_NOTIFY_TO: e-mails do casal (separados por vírgula) que recebem aviso de cada compra aprovada.
  */
-const DEFAULT_NOTIFY_TO = [
-  'matheusantaosilva18@gmail.com',
-  'melissaalcantara17@gmail.com',
-]
+const DEFAULT_NOTIFY_TO = []
 
 function getNotifyEmails() {
   const raw = process.env.EMAIL_NOTIFY_TO || DEFAULT_NOTIFY_TO.join(',')
@@ -54,7 +51,7 @@ function buildOrderDetails(order) {
 
 export async function sendOrderThankYouEmail(order) {
   const apiKey = process.env.RESEND_API_KEY
-  const from = process.env.EMAIL_FROM || 'Rifa Matheus & Melissa <onboarding@resend.dev>'
+  const from = process.env.EMAIL_FROM || 'Rifa Lucas & Sofia <onboarding@resend.dev>'
 
   if (!apiKey) {
     console.warn('RESEND_API_KEY não configurada — e-mail de confirmação não enviado.')
@@ -83,7 +80,7 @@ export async function sendOrderThankYouEmail(order) {
     'Que Deus abençoe muito você e a sua família. Sua participação significa muito para nós!',
     '',
     'Com carinho,',
-    'Matheus & Melissa',
+    'Lucas & Sofia',
   ].join('\n')
 
   const html = `
@@ -96,8 +93,8 @@ export async function sendOrderThankYouEmail(order) {
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#fffaf6;border:1px solid #ead9ce;border-radius:18px;overflow:hidden;">
           <tr>
             <td style="padding:28px 28px 12px;background:linear-gradient(135deg,#b06b6b,#c98989);color:#fff;">
-              <p style="margin:0;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;opacity:0.9;">Rifa do Chá de Casa Nova</p>
-              <h1 style="margin:8px 0 0;font-size:28px;font-weight:600;">Matheus &amp; Melissa</h1>
+              <p style="margin:0;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;opacity:0.9;">Rifa do Chá de Casa Nova (Demo)</p>
+              <h1 style="margin:8px 0 0;font-size:28px;font-weight:600;">Lucas &amp; Sofia</h1>
             </td>
           </tr>
           <tr>
@@ -119,7 +116,7 @@ export async function sendOrderThankYouEmail(order) {
                 </tr>
               </table>
               <p style="margin:0;line-height:1.6;font-size:15px;color:#6b5a52;">
-                Com carinho,<br/>Matheus &amp; Melissa
+                Com carinho,<br/>Lucas &amp; Sofia
               </p>
             </td>
           </tr>

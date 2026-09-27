@@ -57,31 +57,31 @@ export type SiteSettingsFormValues = {
 export const defaultSiteSettings: SiteSettings = {
   id: 1,
   titulo_site: 'Rifa do Chá de Casa Nova',
-  subtitulo_site: 'Matheus & Melissa',
+  subtitulo_site: 'Lucas & Sofia',
   texto_hero:
-    'Com muito carinho, convidamos você a participar da nossa rifa especial do chá de casa nova. Cada número é uma chance de ganhar um prêmio encantador e de fazer parte desse momento tão especial para nós.',
+    'Versão de demonstração — sem fins lucrativos. Com muito carinho, convidamos você a explorar esta rifa especial do chá de casa nova. Cada número é uma chance de ganhar um prêmio e de celebrar esse momento conosco.',
   texto_casal:
-    'Obrigado por fazer parte da nossa história e por celebrar conosco esse momento tão especial.',
-  assinatura_casal: 'Com amor, Matheus & Melissa ♡',
+    'Obrigado por explorar esta demonstração e por celebrar conosco esse momento especial.',
+  assinatura_casal: 'Com carinho, Lucas & Sofia ♡',
   premio_nome: 'R$ 500,00',
   premio_descricao: 'Prêmio do 1º lugar',
   premio_imagem_url:
-    'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?auto=format&fit=crop&w=900&q=80',
+    'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?auto=format&fit=crop&w=900&q=80',
   premio_2_nome: 'R$ 400,00',
   premio_2_descricao: 'Prêmio do 2º lugar',
   premio_2_imagem_url:
-    'https://images.unsplash.com/photo-1585659722983-3a675dabf23d?auto=format&fit=crop&w=900&q=80',
+    'https://images.unsplash.com/photo-1633158829585-23ba8f7c8caf?auto=format&fit=crop&w=900&q=80',
   premio_3_nome: 'R$ 100,00',
   premio_3_descricao: 'Prêmio do 3º lugar',
   premio_3_imagem_url:
-    'https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=900&q=80',
+    'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=900&q=80',
   regulamento:
-    '1. Cada número custa o valor informado no site.\n2. O sorteio será realizado na data indicada.\n3. O ganhador será contatado pelos dados informados no pedido.\n4. Números só são confirmados após a validação do pagamento.\n5. Ao iniciar o pedido, os números ficam reservados por 24 horas. Sem pagamento nesse prazo, a reserva expira e os números voltam para a grade.',
+    '1. Cada número custa o valor informado no site.\n2. O sorteio será realizado na data indicada.\n3. O ganhador será contatado pelos dados informados no pedido.\n4. Números só são confirmados após a validação do pagamento.\n5. Ao iniciar o pedido, os números ficam reservados por 24 horas. Sem pagamento nesse prazo, a reserva expira e os números voltam para a grade.\n6. Esta é uma versão de demonstração, sem fins lucrativos e sem processamento de pagamento real.',
   data_sorteio: '2026-09-15',
   total_numeros: 200,
   valor_numero: 15,
   reserva_minutos: 1440,
-  hero_imagem_url: '/matheus-melissa.jpg',
+  hero_imagem_url: '/casal-demo-hero.png',
   pagamento_habilitado: false,
   pix_chave: null,
   pix_titular: null,
